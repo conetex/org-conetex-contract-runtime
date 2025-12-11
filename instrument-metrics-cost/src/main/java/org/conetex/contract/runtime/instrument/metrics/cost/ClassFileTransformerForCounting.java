@@ -55,7 +55,7 @@ public class ClassFileTransformerForCounting implements RetransformingClassFileT
             System.out.println("transform mainClass: " + classJvmName + " ");
         }
 
-        if (!classJvmName.contains("org/objectweb/asm/")) { // example of how to skip transform
+        if (classJvmName.contains("org/objectweb/asm/")) { // example of how to skip transform
             System.out.println("t noTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
                     classBeingRedefined + " (classBeingRedefined) | " +
                     (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");

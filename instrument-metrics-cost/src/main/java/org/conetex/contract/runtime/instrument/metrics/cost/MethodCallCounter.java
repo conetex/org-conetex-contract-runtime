@@ -1,5 +1,6 @@
 package org.conetex.contract.runtime.instrument.metrics.cost;
 
+import org.conetex.contract.runtime.instrument.Counter;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -20,10 +21,10 @@ public class MethodCallCounter extends ClassVisitor{
             @Override
             protected void onMethodEnter() {
                 // Inject: Counter.count++;
-                    mv.visitFieldInsn(GETSTATIC, "org/conetex/contract/runtime/instrument/metrics/cost/Counter", "count", "J");
+                    mv.visitFieldInsn(GETSTATIC, "org/conetex/contract/runtime/instrument/Counter", "count", "J");
                     mv.visitLdcInsn(1L);
                     mv.visitInsn(LADD);
-                    mv.visitFieldInsn(PUTSTATIC, "org/conetex/contract/runtime/instrument/metrics/cost/Counter", "count", "J");
+                    mv.visitFieldInsn(PUTSTATIC, "org/conetex/contract/runtime/instrument/Counter", "count", "J");
             }
         };
     }

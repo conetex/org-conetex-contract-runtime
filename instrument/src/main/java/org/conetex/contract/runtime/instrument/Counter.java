@@ -1,4 +1,4 @@
-package org.conetex.contract.runtime.instrument.metrics.cost;
+package org.conetex.contract.runtime.instrument;
 
 public class Counter {
 	static {
