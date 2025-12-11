@@ -1,121 +1,139 @@
 package org.conetex.contract.runtime.instrument.metrics.cost;
 
-
-import java.lang.instrument.ClassFileTransformer;
+import org.conetex.contract.runtime.instrument.RetransformingClassFileTransformer;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.security.ProtectionDomain;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class ClassFileTransformerForCounting implements ClassFileTransformer {
-    private  String mainClassJvmStr;
-    private  Instrumentation inst;
-    private  Set<String> transformedClasses;
-    boolean mainClassLoaded;
-    boolean reTransformNotDone;
+public class ClassFileTransformerForCounting implements RetransformingClassFileTransformer {
 
-    Set<String> nottransformedClasses;
+    private String mainClassJvmName;
 
-    public ClassFileTransformerForCounting(String mainClassJvmStr, Instrumentation inst, Set<String> transformedClasses) {
-        this.mainClassJvmStr = mainClassJvmStr;
-        this.inst = inst;
-        this.transformedClasses = transformedClasses;
-        mainClassLoaded = true;
-        reTransformNotDone = false;
-        nottransformedClasses = new TreeSet<>();
-        System.out.println("HALLLOOOO 1");
+    @Override
+    public void initMainClassJvmName(String mainClassJvmName) {
+        this.mainClassJvmName = mainClassJvmName;
+    }
+
+    private final Set<String> handledClasses;
+
+    @Override
+    public Set<String> getHandledClasses() {
+        return handledClasses;
+    }
+
+    private final Set<String> transformFailedClasses;
+
+    @Override
+    public Set<String> getTransformFailedClasses() {
+        return transformFailedClasses;
+    }
+
+    public ClassFileTransformerForCounting() {
+        this.handledClasses = new TreeSet<>();
+        this.transformFailedClasses = new TreeSet<>();
     }
 
     @Override
-    public byte[] transform(Module module, ClassLoader loader, String className, Class<?> classBeingRedefined,
+    public byte[] transform(Module module, ClassLoader loader, String classJvmName, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        System.out.println("t callTransform: " + module + "(module" +
-                ") | " + loader + " (loader) | " + className + " (className) | " + classBeingRedefined + " (classBeingRedefined) | " + (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
-        return transform(loader, className, classBeingRedefined,
-                protectionDomain, classfileBuffer);
-
-    }
-
-    public String toString() {
-        return "mfrTransformer";
+        System.out.println("t callTransform: " + module + "(module) | " + loader + " (loader) | " + classJvmName +
+                " (classJvmName) | " + classBeingRedefined + " (classBeingRedefined) | " +
+                (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
+        return transform(loader, classJvmName, classBeingRedefined, protectionDomain, classfileBuffer);
     }
 
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
+    public byte[] transform(ClassLoader loader, String classJvmName, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
 
-        if (className.equals("java/util/TreeMap")) {//ist in vererbungshierarchie von main
-            System.out.println("BREAK transform: " + className + " (className)");
-        }
-        if (className.contains("org/objectweb/asm/")
-            ||   className.contains("pocASM")
-//                                &&  !className.contains("java/lang/Shutdown")
-            ||   className.contains("counter/Counter")
-        ) {
-            System.out.println("BREAK transform: " + className + " (className)");
-        }
-        //System.out.println("t classLoaded: " + className);
-        if (className.equals(mainClassJvmStr)) {
-            mainClassLoaded = true;
-            System.out.println("t mainClassLoaded: " + mainClassLoaded + " " + className);
-//retransform();
-
-        } else {
-            if (reTransformNotDone && mainClassLoaded) {
-//retransform3(inst, transformedClasses);
-                retransform2(inst);
-                reTransformNotDone = false;
-            }
+        if (classJvmName.equals(mainClassJvmName)) {
+            System.out.println("transform mainClass: " + classJvmName + " ");
         }
 
-        //reTransformDone
-        if (mainClassLoaded) { //|| className.equals("java/util/TreeMap")
-
-            if (transformedClasses.contains(className)) {
-                System.out.println("t noReTransform: " + loader + " (loader) | " + className + " (className) | " + classBeingRedefined + " (classBeingRedefined) | " + (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
-            } else {
-                transformedClasses.add(className);
-                if (!className.contains("xorg/objectweb/asm/")
-                        && !className.contains("xpocASM")
-//                                &&  !className.contains("java/lang/Shutdown")
-                        && !className.contains("xcounter/Counter")
-                ) {
-                    //if (!className.startsWith("sun") && !className.startsWith("java") && !className.startsWith("jdk") && !className.startsWith("java/security") && !className.startsWith("java/io") && !className.startsWith("java/lang/") && !className.endsWith("CounterX") && !className.endsWith("AgentX")) {
-                    System.out.println("t doTransform: " + loader + " (loader) | " + className + " (className) | " + classBeingRedefined + " (classBeingRedefined) | " + (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
-                    try {
-                        //return classfileBuffer;
-
-                        return Transformer.transform2(classfileBuffer);
-                    } catch (Throwable e) {
-                        System.err.println("t !!! exception 4 " + className + " | " + e.getClass().getName() + " | " + e.getMessage());
-                        //e.printStackTrace();
-                        //System.out.println("<- trans e ");
-                    }
-                } else {
-                    System.out.println("t noTransform: " + loader + " (loader) | " + className + " (className) | " + classBeingRedefined + " (classBeingRedefined) | " + (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
-                }
-            }
-        } else {
-            System.out.println("t noTransform before main: " + loader + " (loader) | " + className + " (className) | " + classBeingRedefined + " (classBeingRedefined) | " + (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
-            nottransformedClasses.add(className);
+        if (!classJvmName.contains("org/objectweb/asm/")) { // example of how to skip transform
+            System.out.println("t noTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
+                    classBeingRedefined + " (classBeingRedefined) | " +
+                    (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
+            return classfileBuffer;
         }
-        byte[] re = classfileBuffer;
-        return re;
-        //return Transformer.notransform(classfileBuffer);
-    }
 
-    private static void retransform(Instrumentation inst) {
-    }
-    static void retransform2(Instrumentation inst) {
-        //Class[] allclasses = inst.getAllLoadedClasses();
+        if (this.handledClasses.contains(classJvmName)) {
+            System.out.println("t noReTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
+                    classBeingRedefined + " (classBeingRedefined) | " +
+                    (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
+            return classfileBuffer;
+        }
+
+        System.out.println("t doTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
+                classBeingRedefined + " (classBeingRedefined) | " +
+                (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
+        this.handledClasses.add(classJvmName);
         try {
-            inst.retransformClasses(TreeMap.class);
-        } catch (UnmodifiableClassException e) {
-            System.err.println("t reTRANSClass all classes UnmodifiableClassException " + e.getMessage());
+            return transform(classfileBuffer);
+        }
+        catch (Throwable e) {
+            System.err.println("t !!! exception 4 " + classJvmName + " | " + e.getClass().getName() + " | " +
+                    e.getMessage());
+            this.transformFailedClasses.add(classJvmName);
+        }
+        return classfileBuffer;
+    }
+
+    @Override
+    public void triggerRetransform(Instrumentation inst, Class<?>[] allClasses) {
+        for (Class<?> clazz : allClasses) {
+            String classJvmName = clazz.getName().replace('.', '/');
+            if(   this.handledClasses.contains( classJvmName )   ) {
+                System.out.println("retransform obsolete: '" + classJvmName +
+                        "' (classJvmName) is already transformed");
+                continue;
+            }
+            if(classJvmName.equals("java/lang/Object") ) { // example of how to skip retransform
+                System.out.println("retransform skipped: '" + classJvmName + "' (classJvmName)");
+                continue;
+            }
+
+            if (! inst.isModifiableClass(clazz)) {
+                System.out.println("retransform skipped for unmodifiable: '" + classJvmName + "' (classJvmName)");
+                continue;
+            }
+
+            try {
+                inst.retransformClasses(clazz);
+            } catch (UnmodifiableClassException e) {
+                System.err.println("retransform failed for'" + clazz + "' (class). UnmodifiableClassException: " +
+                        e.getMessage());
+                continue;
+            }
+            System.out.println("retransform triggered for '" + clazz + "' (class) || '" + classJvmName +
+                    "' (classJvmName) -->");
         }
     }
 
+    private static byte[] transform(byte[] classBytes) {
+        System.out.println(" classWriter->");
+        ClassReader reader = new ClassReader(classBytes);
+        ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES);
+        ClassVisitor visitor = new MethodCallCounter(writer);
+        reader.accept(visitor, ClassReader.EXPAND_FRAMES);
+        byte[] re = writer.toByteArray();
+        System.out.println(" <-classWriter");
+        return re;
+    }
+
+    public static byte[] noRealTransform(byte[] classBytes) {
+        ClassReader reader = new ClassReader(classBytes);
+        ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES);
+        return writer.toByteArray();
+    }
+
+    public static byte[] noTransform(byte[] classBytes) {
+        return classBytes;
+    }
 
 }
