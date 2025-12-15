@@ -27,13 +27,13 @@ public class Agent {
         instrument(agentArgs, inst);
     }
 
-    // USAGE: -javaagent:C:\_PROJ\GITHUB\org.conetex.contract.runtime\agent\target\agent-1.0-SNAPSHOT.jar=C:\_PROG\eclipse-java-2025-06WSpaces\workspaceA\counter\target\counter-0.0.2-SNAPSHOT-jar-with-dependencies.jar
-    // USAGE: -javaagent:/agent/target/agent-1.0-SNAPSHOT.jar=C:\_PROG\eclipse-java-2025-06WSpaces\workspaceA\counter\target\counter-0.0.2-SNAPSHOT-jar-with-dependencies.jar
+    // USAGE: -javaagent:agent/target/agent-0.0.1-SNAPSHOT.jar=pathToTransformerJar:../../instrument-metrics-cost/target/instrument-metrics-cost-0.0.1-SNAPSHOT.jar
     public static void premain(String agentArgs, Instrumentation inst) {
         instrument(agentArgs, inst);
     }
 
     private static void instrument(String agentArgs, Instrumentation inst) {
+        System.out.println("working here: " + new File(".").getAbsolutePath());
         Path agentPath;
         try {
             agentPath = Paths.get(Agent.class.getProtectionDomain().getCodeSource().getLocation().toURI());
@@ -46,7 +46,7 @@ public class Agent {
 
         String bootstrapJarPath = args.get(ARG_PATH_TO_TRANSFORMER_JAR);
         if (bootstrapJarPath == null || bootstrapJarPath.isEmpty()) {
-            throw new IllegalArgumentException("premain Missing required agent argument: " + ARG_PATH_TO_TRANSFORMER_JAR + "=<path-to-bootstrap-jar>");
+            throw new IllegalArgumentException("premain Missing required agent argument: " + ARG_PATH_TO_TRANSFORMER_JAR + ":<path-to-bootstrap-jar>");
         }
         Path bootstrapPath = agentDir.resolve(bootstrapJarPath);
         JarFile bootstrapJar;

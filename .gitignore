@@ -1,0 +1,15 @@
+# Maven
+target/
+pom.xml.versionsBackup
+
+# IntelliJ project files
+*.iml
+*.iws
+*.ipr
+.idea/
+.idea
+
+# eclipse project file
+.settings/
+.classpath
+.project

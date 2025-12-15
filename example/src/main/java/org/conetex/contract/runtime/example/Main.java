@@ -6,12 +6,14 @@ import org.conetex.contract.runtime.example.subpackage.ClassFromOtherPackage;
 import org.conetex.contract.runtime.instrument.counter.Jump;
 import org.conetex.contract.runtime.instrument.counter.MethodEntry;
 
+import java.io.File;
 import java.util.TreeMap;
 
 public class Main {
 
+    // -javaagent:/agent/target/agent-0.0.0-SNAPSHOT.jar=pathToTransformerJar:../../instrument-metrics-cost/target/instrument-metrics-cost-0.0.0-SNAPSHOT.jar
     public static void main(String[] args) {
-
+        System.out.println("working here: " + new File(".").getAbsolutePath());
         System.out.println("S T A R T");
         System.out.println("Example Counter at start: " + MethodEntry.getHead().getCount() + " ");
         System.out.println("Example Jumps at start: " + Jump.getHead().getCount() + " ");
