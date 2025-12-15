@@ -1,4 +1,4 @@
-package org.conetex.contract.runtime.instrument;
+package org.conetex.contract.runtime.instrument.interfaces;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
@@ -15,6 +15,10 @@ public interface RetransformingClassFileTransformer extends ClassFileTransformer
     void triggerRetransform(Instrumentation inst, Class<?>[] allClasses);
 
     void initMainClassJvmName(String mainClassJvmName);
+
+    Counter[] getCounters();
+
+    float[] getCounterWeights();
 
     void resetCounters();
 

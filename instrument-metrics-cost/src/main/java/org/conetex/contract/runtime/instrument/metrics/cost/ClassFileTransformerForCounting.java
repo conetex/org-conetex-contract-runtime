@@ -1,29 +1,44 @@
 package org.conetex.contract.runtime.instrument.metrics.cost;
 
+import org.conetex.contract.runtime.instrument.interfaces.Counter;
+import org.conetex.contract.runtime.instrument.interfaces.RetransformingClassFileTransformer;
+
 //import org.conetex.contract.runtime.instrument.RetransformingClassFileTransformer;
 import org.conetex.contract.runtime.instrument.counter.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
-import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.security.ProtectionDomain;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class ClassFileTransformerForCounting implements //Retransforming
-        ClassFileTransformer {
+public class ClassFileTransformerForCounting implements RetransformingClassFileTransformer {
 
     private String mainClassJvmName;
 
-    //@Override
+    @Override
     public void initMainClassJvmName(String mainClassJvmName) {
         this.mainClassJvmName = mainClassJvmName;
     }
 
-    //@Override
+    private final Counter[] counters;
+
+    @Override
+    public Counter[] getCounters() {
+        return this.counters;
+    }
+
+    private final float[] weights;
+
+    @Override
+    public float[] getCounterWeights() {
+        return this.weights;
+    }
+
+    @Override
     public void resetCounters() {
         ArithmeticAddSubNeg.reset();
         ArithmeticDivRem.reset();
@@ -48,21 +63,21 @@ public class ClassFileTransformerForCounting implements //Retransforming
 
     private final Set<String> handledClasses;
 
-    //@Override
+    @Override
     public Set<String> getHandledClasses() {
         return handledClasses;
     }
 
     private final Set<String> transformFailedClasses;
 
-    //@Override
+    @Override
     public Set<String> getTransformFailedClasses() {
         return transformFailedClasses;
     }
 
     private final Set<String> transformSkippedClasses;
 
-    //@Override
+    @Override
     public Set<String> getTransformSkippedClasses() {
         return transformSkippedClasses;
     }
@@ -71,14 +86,79 @@ public class ClassFileTransformerForCounting implements //Retransforming
         this.handledClasses = new TreeSet<>();
         this.transformFailedClasses = new TreeSet<>();
         this.transformSkippedClasses = new TreeSet<>();
+
+        // creating this array leads to
+        // load all classes, before they are needed by transform.
+        // this is necessary to avoid transformation loops
+        this.counters = new Counter[]{
+            ArithmeticAddSubNeg.getHead(),
+            ArithmeticDivRem.getHead(),
+            ArithmeticMul.getHead(),
+
+            ArrayLoad.getHead(),
+            ArrayNew.getHead(),
+            ArrayStore.getHead(),
+
+            CompareInt.getHead(),
+            CompareLong.getHead(),
+            CompareObject.getHead(),
+
+            ExceptionThrow.getHead(),
+
+            FieldLoad.getHead(),
+            FieldStore.getHead(),
+
+            Jump.getHead(),
+
+            MethodCall.getHead(),
+            MethodEntry.getHead(),
+
+            Monitor.getHead(),
+
+            VariableLoad.getHead(),
+            VariableStore.getHead(),
+
+            TypeCheck.getHead()
+        };
+
+        this.weights = new float[] {
+            ArithmeticAddSubNeg.WEIGHT,
+            ArithmeticDivRem.WEIGHT,
+            ArithmeticMul.WEIGHT,
+
+            ArrayLoad.WEIGHT,
+            ArrayNew.WEIGHT,
+            ArrayStore.WEIGHT,
+
+            CompareInt.WEIGHT,
+            CompareLong.WEIGHT,
+            CompareObject.WEIGHT,
+
+            ExceptionThrow.WEIGHT,
+
+            FieldLoad.WEIGHT,
+            FieldStore.WEIGHT,
+
+            Jump.WEIGHT,
+
+            MethodCall.WEIGHT,
+            MethodEntry.WEIGHT,
+
+            Monitor.WEIGHT,
+
+            VariableLoad.WEIGHT,
+            VariableStore.WEIGHT,
+
+            TypeCheck.WEIGHT
+        };
     }
 
     @Override
     public byte[] transform(Module module, ClassLoader loader, String classJvmName, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        System.out.println("t callTransform: " + module + "(module) | " + loader + " (loader) | " + classJvmName +
+        System.out.println("transform: " + loader + " (loader) | " + classJvmName +
                 " (classJvmName) | " + classBeingRedefined + " (classBeingRedefined) | " +
-                (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
+                (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain) | " + module + "(module)");
         return transform(loader, classJvmName, classBeingRedefined, protectionDomain, classfileBuffer);
     }
 
@@ -91,7 +171,7 @@ public class ClassFileTransformerForCounting implements //Retransforming
         }
 
         if (this.handledClasses.contains(classJvmName)) {
-            System.out.println("t noReTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
+            System.out.println("transform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
                     classBeingRedefined + " (classBeingRedefined) | " +
                     (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
             return classfileBuffer;
@@ -125,7 +205,7 @@ public class ClassFileTransformerForCounting implements //Retransforming
         return classfileBuffer;
     }
 
-    //@Override
+    @Override
     public void triggerRetransform(Instrumentation inst, Class<?>[] allClasses) {
         for (Class<?> clazz : allClasses) {
             String classJvmName = clazz.getName().replace('.', '/');

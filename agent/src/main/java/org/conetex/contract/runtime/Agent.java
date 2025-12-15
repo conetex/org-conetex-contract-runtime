@@ -24,12 +24,16 @@ public class Agent {
 
     public static void agentmain(
             String agentArgs, Instrumentation inst) {
-        premain(agentArgs, inst);
+        instrument(agentArgs, inst);
     }
 
     // USAGE: -javaagent:C:\_PROJ\GITHUB\org.conetex.contract.runtime\agent\target\agent-1.0-SNAPSHOT.jar=C:\_PROG\eclipse-java-2025-06WSpaces\workspaceA\counter\target\counter-0.0.2-SNAPSHOT-jar-with-dependencies.jar
     // USAGE: -javaagent:/agent/target/agent-1.0-SNAPSHOT.jar=C:\_PROG\eclipse-java-2025-06WSpaces\workspaceA\counter\target\counter-0.0.2-SNAPSHOT-jar-with-dependencies.jar
     public static void premain(String agentArgs, Instrumentation inst) {
+        instrument(agentArgs, inst);
+    }
+
+    private static void instrument(String agentArgs, Instrumentation inst) {
         Path agentPath;
         try {
             agentPath = Paths.get(Agent.class.getProtectionDomain().getCodeSource().getLocation().toURI());

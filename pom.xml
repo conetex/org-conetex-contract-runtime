@@ -6,22 +6,22 @@
 
     <groupId>org.conetex.contract.runtime</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
-
-    <modules>
-        <!--<module>instrument</module>-->
-        <module>instrument-metrics-cost</module>
-        <module>agent</module>
-        <module>example</module>
-        <module>example2</module>
-    </modules>
 
     <properties>
         <maven.compiler.source>24</maven.compiler.source>
         <maven.compiler.target>24</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <modules>
+        <module>instrument-interfaces</module>
+        <module>instrument-metrics-cost</module>
+        <module>agent</module>
+        <module>example</module>
+        <module>example2</module>
+    </modules>
 
 </project>
