@@ -3,7 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>org.conetex.runtime.instrument</groupId>
         <artifactId>parent</artifactId>
@@ -11,23 +10,31 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>agent</artifactId>
+    <artifactId>metrics-cost</artifactId>
 
     <dependencies>
-        <!-- MUST BE EMPTY                                    -->
-        <!-- AVOID DEPENDENCIES TO INSTRUMENT IMPLEMENTATIONS -->
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>9.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-commons</artifactId>
+            <version>9.8</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.conetex.runtime.instrument</groupId>
+            <artifactId>counter</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
-    <!-- IMPLICIT DEPENDENCY: -->
-    <!-- INSTRUMENT IMPLEMENTATIONS USED BY THIS AGENT MUST   -->
-    <!-- IMPLEMENT INTERFACES DEFINED HERE:
-    <project>
-        <groupId>org.conetex.runtime.instrument</groupId>
-        <artifactId>interfaces</artifactId>
-    </project>                                                -->
 
     <build>
         <plugins>
-            <!-- create the JAR with dependencies - even there are none -->
+            <!-- create the JAR with dependencies -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.6.0</version>
@@ -40,19 +47,16 @@
                     <archive>
                         <manifest>
                             <!-- JAR has no main -->
-                            <!-- <mainClass>org.conetex.runtime.instrument.Agent</mainClass> -->
                         </manifest>
                         <manifestEntries>
-                            <Premain-Class>org.conetex.runtime.instrument.Agent</Premain-Class>
-                            <Agent-Class>org.conetex.runtime.instrument.Agent</Agent-Class>
-                            <Can-Redefine-Classes>true</Can-Redefine-Classes>
-                            <Can-Retransform-Classes>true</Can-Retransform-Classes>
+                            <Transformer-Class>org.conetex.runtime.instrument.metrics.cost.Transformer</Transformer-Class>
+                            <appendToBootstrapClassLoaderSearch>true</appendToBootstrapClassLoaderSearch>
                         </manifestEntries>
                     </archive>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>make-agent-jar</id>
+                        <id>make-transformer-jar</id>
                         <phase>package</phase>
                         <goals><goal>single</goal></goals>
                     </execution>

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.conetex.contract.runtime</groupId>
+    <groupId>org.conetex.runtime.instrument</groupId>
     <artifactId>parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
@@ -17,8 +17,9 @@
     </properties>
 
     <modules>
-        <module>instrument-interfaces</module>
-        <module>instrument-metrics-cost</module>
+        <module>interfaces</module>
+        <module>counter</module>
+        <module>metrics-cost</module>
         <module>agent</module>
         <module>example</module>
         <module>example2</module>
