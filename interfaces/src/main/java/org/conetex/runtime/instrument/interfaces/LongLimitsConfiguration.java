@@ -1,6 +1,9 @@
 package org.conetex.runtime.instrument.interfaces;
 
-public interface MathWithMinLongMaxLongConfiguration {
+public interface LongLimitsConfiguration {
+
     long min();
+
     long max();
+
 }

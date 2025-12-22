@@ -1,38 +1,33 @@
 package org.conetex.runtime.instrument.counter;
 
-import org.conetex.runtime.instrument.interfaces.Counter;
-import org.conetex.runtime.instrument.interfaces.CounterStub;
+import org.conetex.runtime.instrument.interfaces.ChainOfLongs;
+import org.conetex.runtime.instrument.interfaces.LinkedLong;
 
-public class Stack implements CounterStub {
+public class Counter implements ChainOfLongs {
 
-    public final static long COUNTER_MIN_VALUE = 0;//Long.MIN_VALUE;
+    private Node top;
 
-    public final static long COUNTER_MAX_VALUE = 1001;//Long.MAX_VALUE;
-
-    private DefaultCounter top;
-
-    public final synchronized DefaultCounter peek() {
+    public final synchronized LinkedLong peek() {
         return this.top;
     }
 
     private boolean isInProgress = false;
 
-    final Config config;
+    final LongLimits minMax;
 
-    public Stack(Config config){
-        this.config = config;
-        this.top = new DefaultCounter(new NullCounter(this.config), this.config);
+    public Counter(LongLimits config){
+        this.minMax = config;
+        this.top = new Node(new Tail(this.minMax), this.minMax);
     }
 
     public final synchronized void reset() {
-        this.top = new DefaultCounter(new NullCounter(this.config), this.config);
+        this.top = new Node(new Tail(this.minMax), this.minMax);
     }
 
     /**
      * Increments the counter. This method is designed to track and count costs in the
      * program by increasing the counter value in a thread-safe manner. If the current counter
      * reaches its maximum value, a new counter instance is created and linked to the previous one.
-     *
      * Key implementation details:
      * - This method does not use or depend on any external classes or methods outside this class,
      *   except for Java primitives and `synchronized`, which are part of the core language.
@@ -41,7 +36,6 @@ public class Stack implements CounterStub {
      *   any potentially instrumented classes.
      * - A safeguard (`isInProgress`) is implemented to detect and prevent recursive calls,
      *   which avoids endless recursion and ensures the integrity of the counter state.
-     *
      * As a result, this method is safe to use in instrumented environments, as it avoids any
      * circular calls or interference caused by instrumented classes or dependencies.
      */
@@ -52,8 +46,8 @@ public class Stack implements CounterStub {
         }
         this.isInProgress = true;
         try {
-            if (this.top.value == Stack.COUNTER_MAX_VALUE) {
-                this.top = new DefaultCounter(this.top, this.config);
+            if (this.top.value == this.minMax.max()) {
+                this.top = new Node(this.top, this.minMax);
             }
             this.top.value++;
         } finally {

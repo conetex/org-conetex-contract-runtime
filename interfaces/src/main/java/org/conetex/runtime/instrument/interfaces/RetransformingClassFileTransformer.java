@@ -6,27 +6,31 @@ import java.util.Set;
 
 public interface RetransformingClassFileTransformer extends ClassFileTransformer {
 
+    @SuppressWarnings("unused")
     Set<String> getHandledClasses();
 
+    @SuppressWarnings("unused")
     Set<String> getTransformFailedClasses();
 
+    @SuppressWarnings("unused")
     Set<String> getTransformSkippedClasses();
 
+    // ----------------------------------------------------
     // used by agent for instrumentation
+
+    @SuppressWarnings("unused")
     void triggerRetransform(Instrumentation inst, Class<?>[] allClasses);
 
+    @SuppressWarnings("unused")
     void initMainClassJvmName(String mainClassJvmName);
 
     void resetCounters();
 
+    // ----------------------------------------------------
     // used by agent for reporting
-    CounterStub[] getCounters();
 
-    Configuration getConfig();
+    ChainsOfLongs getConfig();
 
-    int[] getCounterWeights();
-
-
-    long[] report();
+    ResultLongDividedByInt[] report();
 
 }
