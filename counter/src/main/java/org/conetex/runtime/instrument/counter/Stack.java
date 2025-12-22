@@ -1,12 +1,15 @@
 package org.conetex.runtime.instrument.counter;
 
-public class Stack {
+import org.conetex.runtime.instrument.interfaces.Counter;
+import org.conetex.runtime.instrument.interfaces.CounterStub;
+
+public class Stack implements CounterStub {
 
     public final static long COUNTER_MIN_VALUE = 0;//Long.MIN_VALUE;
 
     public final static long COUNTER_MAX_VALUE = 1001;//Long.MAX_VALUE;
 
-    private DefaultCounter top = (new NullCounter(this)).createNext();
+    private DefaultCounter top;
 
     public final synchronized DefaultCounter peek() {
         return this.top;
@@ -14,18 +17,15 @@ public class Stack {
 
     private boolean isInProgress = false;
 
-    public long getCounterMin() {
-        return counterMin;
-    }
+    final Config config;
 
-    final long counterMin;
-
-    public Stack(long counterMin){
-        this.counterMin = counterMin;
+    public Stack(Config config){
+        this.config = config;
+        this.top = new DefaultCounter(new NullCounter(this.config), this.config);
     }
 
     public final synchronized void reset() {
-        this.top = (new NullCounter(this)).createNext();
+        this.top = new DefaultCounter(new NullCounter(this.config), this.config);
     }
 
     /**
@@ -53,13 +53,26 @@ public class Stack {
         this.isInProgress = true;
         try {
             if (this.top.value == Stack.COUNTER_MAX_VALUE) {
-                this.top = this.top.createNext();
+                this.top = new DefaultCounter(this.top, this.config);
             }
             this.top.value++;
         } finally {
             this.isInProgress = false;
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
 

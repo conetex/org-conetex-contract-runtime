@@ -1,8 +1,11 @@
 package org.conetex.runtime.instrument.metrics.cost;
 
 import org.conetex.runtime.instrument.Report;
+import org.conetex.runtime.instrument.counter.Config;
 import org.conetex.runtime.instrument.counter.Stack;
+import org.conetex.runtime.instrument.interfaces.Configuration;
 import org.conetex.runtime.instrument.interfaces.Counter;
+import org.conetex.runtime.instrument.interfaces.CounterStub;
 import org.conetex.runtime.instrument.interfaces.RetransformingClassFileTransformer;
 
 import org.objectweb.asm.ClassReader;
@@ -26,29 +29,36 @@ public class Transformer implements RetransformingClassFileTransformer {
     }
 
     @Override
-    public Counter[] getCounters() {
-        return new Counter[]{
-                Counters.ARITHMETIC_ADD_SUB_NEG.peek(),
-                Counters.ARITHMETIC_DIV_REM.peek(),
-                Counters.ARITHMETIC_MUL.peek(),
-                Counters.ARRAY_LOAD.peek(),
-                Counters.ARRAY_NEW.peek(),
-                Counters.ARRAY_STORE.peek(),
-                Counters.COMPARE_INT.peek(),
-                Counters.COMPARE_LONG.peek(),
-                Counters.COMPARE_OBJECT.peek(),
-                Counters.EXCEPTION_THROW.peek(),
-                Counters.FIELD_LOAD.peek(),
-                Counters.FIELD_STORE.peek(),
-                Counters.JUMP.peek(),
-                Counters.METHOD_CALL.peek(),
-                Counters.METHOD_ENTRY.peek(),
-                Counters.MONITOR.peek(),
-                Counters.VARIABLE_LOAD.peek(),
-                Counters.VARIABLE_STORE.peek(),
-                Counters.TYPE_CHECK.peek()
+    public Configuration getConfig() {
+        return new Config(-100, 100);
+    }
+
+    @Override
+    public CounterStub[] getCounters() {
+        return new CounterStub[]{
+                Counters.ARITHMETIC_ADD_SUB_NEG,
+                Counters.ARITHMETIC_DIV_REM,
+                Counters.ARITHMETIC_MUL,
+                Counters.ARRAY_LOAD,
+                Counters.ARRAY_NEW,
+                Counters.ARRAY_STORE,
+                Counters.COMPARE_INT,
+                Counters.COMPARE_LONG,
+                Counters.COMPARE_OBJECT,
+                Counters.EXCEPTION_THROW,
+                Counters.FIELD_LOAD,
+                Counters.FIELD_STORE,
+                Counters.JUMP,
+                Counters.METHOD_CALL,
+                Counters.METHOD_ENTRY,
+                Counters.MONITOR,
+                Counters.VARIABLE_LOAD,
+                Counters.VARIABLE_STORE,
+                Counters.TYPE_CHECK
         };
     }
+
+
 
     public double[] xgetCounterWeightsDouble() {
         return WEIGHTS_DOUBLE;

@@ -20,7 +20,9 @@ public interface RetransformingClassFileTransformer extends ClassFileTransformer
     void resetCounters();
 
     // used by agent for reporting
-    Counter[] getCounters();
+    CounterStub[] getCounters();
+
+    Configuration getConfig();
 
     int[] getCounterWeights();
 

@@ -1,10 +1,11 @@
 package org.conetex.runtime.instrument.metrics.cost;
 
+import org.conetex.runtime.instrument.counter.Config;
 import org.conetex.runtime.instrument.counter.Stack;
 
 public final class Counters {
 
-    public final static long NEW_MIN_VALUE = 0;
+    public final static Config NEW_MIN_VALUE = new Config(0L, 10L);
 
     public static final Stack ARITHMETIC_ADD_SUB_NEG = new Stack(NEW_MIN_VALUE);
     public static final Stack ARITHMETIC_DIV_REM = new Stack(NEW_MIN_VALUE);

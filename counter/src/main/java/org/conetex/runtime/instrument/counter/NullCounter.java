@@ -2,12 +2,12 @@ package org.conetex.runtime.instrument.counter;
 
 import org.conetex.runtime.instrument.interfaces.Counter;
 
-public class NullCounter extends AbstractCounter {
+public class NullCounter implements Counter{
 
     private final long value;
 
-    NullCounter(Stack parent){
-        this.value = parent.getCounterMin();
+    NullCounter(Config c){
+        this.value = c.min;
     }
 
     public final long getValue() {
