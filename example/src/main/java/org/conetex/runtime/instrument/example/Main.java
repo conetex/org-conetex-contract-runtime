@@ -32,18 +32,18 @@ public class Main {
         System.out.println("Example Counter after nothing: " + CostCounters.METHOD_ENTRY.peek().getValue() + " ");
 
         long i = CostCounters.METHOD_ENTRY.peek().getValue();
-        Long x = Long.valueOf(Long.MAX_VALUE);
-        long i1 = CostCounters.METHOD_ENTRY.peek().getValue();
-        Long xx = x.longValue();
-        String xxx = xx.toString();
+        System.out.println("loaded counter..." + i);
+        long xx = Long.MAX_VALUE;
+        String xxx = Long.toString(xx);
         System.out.println("Example Jumps at toString: " + CostCounters.JUMP.peek().getValue() + " ");
-        long i2 = CostCounters.METHOD_ENTRY.peek().getValue();
         System.out.println("Example Counter: " + CostCounters.METHOD_ENTRY.peek().getValue() + " " + xxx);
         i = CostCounters.METHOD_ENTRY.peek().getValue();
-        System.out.println("load counter..." + x);
+        System.out.println("loaded counter..." + i);
+        System.out.println("load counter..." + xx);
         System.out.println("Example Counter: ".concat(Long.toString(CostCounters.METHOD_ENTRY.peek().getValue())) );
         ClassFromOtherPackage.test();
         i = CostCounters.METHOD_ENTRY.peek().getValue();
+        System.out.println("loaded counter..." + i);
         foo();
         System.out.println("Example Counter: " + CostCounters.METHOD_ENTRY.peek().getValue());
         Methods.foo();
@@ -56,9 +56,9 @@ public class Main {
         TreeMap<String, String> treeX = new TreeMap<>();
         System.out.println("Example Counter x: ".concat( Long.valueOf(CostCounters.METHOD_ENTRY.peek().getValue()).toString() ));
         treeX.put("x", "xx");
-        StackTraceElement yyy = null;
-        //IdentityHashMap.IdentityHashMapIterator xxxxx = null;
+
         String isInMap = treeX.get("x");
+        System.out.println("loaded counter..." + isInMap);
         System.out.println("Example Counter x: ".concat( Long.valueOf(CostCounters.METHOD_ENTRY.peek().getValue()).toString() ));
         System.out.println("Example Counter x: ".concat( Long.valueOf(CostCounters.METHOD_ENTRY.peek().getValue()).toString() ));
 
