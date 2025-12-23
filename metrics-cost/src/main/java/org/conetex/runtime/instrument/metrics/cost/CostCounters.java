@@ -3,7 +3,7 @@ package org.conetex.runtime.instrument.metrics.cost;
 import org.conetex.runtime.instrument.counter.CountersWeighted;
 import org.conetex.runtime.instrument.counter.LongLimits;
 import org.conetex.runtime.instrument.counter.Counter;
-import org.conetex.runtime.instrument.interfaces.ChainOfLongs;
+import org.conetex.runtime.instrument.interfaces.counter.ChainOfLongs;
 
 public final class CostCounters {
 

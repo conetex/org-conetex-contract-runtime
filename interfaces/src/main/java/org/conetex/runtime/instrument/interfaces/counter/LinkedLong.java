@@ -1,4 +1,4 @@
-package org.conetex.runtime.instrument.interfaces;
+package org.conetex.runtime.instrument.interfaces.counter;
 
 /**
  * Represents a counter used to track and measure program-related metrics,

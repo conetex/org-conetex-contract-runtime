@@ -1,5 +1,8 @@
 package org.conetex.runtime.instrument.interfaces;
 
+import org.conetex.runtime.instrument.interfaces.arithmetic.ChainsOfLongs;
+import org.conetex.runtime.instrument.interfaces.arithmetic.ResultLongDividedByInt;
+
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.util.Set;

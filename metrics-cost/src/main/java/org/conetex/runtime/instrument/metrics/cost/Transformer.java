@@ -2,7 +2,7 @@ package org.conetex.runtime.instrument.metrics.cost;
 
 import org.conetex.runtime.instrument.Report;
 import org.conetex.runtime.instrument.counter.CountersWeighted;
-import org.conetex.runtime.instrument.interfaces.ResultLongDividedByInt;
+import org.conetex.runtime.instrument.interfaces.arithmetic.ResultLongDividedByInt;
 import org.conetex.runtime.instrument.interfaces.RetransformingClassFileTransformer;
 
 import org.objectweb.asm.ClassReader;
@@ -20,7 +20,6 @@ public class Transformer implements RetransformingClassFileTransformer {
 
     public static final String UNTRANSFORMABLE_PACKAGE_SELF = "org/conetex/runtime/instrument";
 
-    @SuppressWarnings("SpellCheckingInspection")
     public static final String UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM = "org/objectweb/asm/";
 
     private String mainClassJvmName;

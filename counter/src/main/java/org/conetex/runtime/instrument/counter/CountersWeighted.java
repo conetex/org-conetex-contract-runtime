@@ -1,9 +1,9 @@
 package org.conetex.runtime.instrument.counter;
 
-import org.conetex.runtime.instrument.interfaces.ChainsOfLongs;
-import org.conetex.runtime.instrument.interfaces.LinkedLong;
-import org.conetex.runtime.instrument.interfaces.ChainOfLongs;
-import org.conetex.runtime.instrument.interfaces.ResultLongDividedByInt;
+import org.conetex.runtime.instrument.interfaces.arithmetic.ChainsOfLongs;
+import org.conetex.runtime.instrument.interfaces.counter.LinkedLong;
+import org.conetex.runtime.instrument.interfaces.counter.ChainOfLongs;
+import org.conetex.runtime.instrument.interfaces.arithmetic.ResultLongDividedByInt;
 
 @SuppressWarnings("ClassCanBeRecord")
 public class CountersWeighted implements ChainsOfLongs {

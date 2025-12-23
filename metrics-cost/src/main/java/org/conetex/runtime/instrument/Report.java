@@ -2,6 +2,7 @@ package org.conetex.runtime.instrument;
 
 import org.conetex.runtime.instrument.counter.Arithmetics;
 import org.conetex.runtime.instrument.interfaces.*;
+import org.conetex.runtime.instrument.interfaces.arithmetic.ResultLongDividedByInt;
 
 public class Report {
 

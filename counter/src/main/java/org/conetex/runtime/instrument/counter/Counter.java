@@ -1,7 +1,7 @@
 package org.conetex.runtime.instrument.counter;
 
-import org.conetex.runtime.instrument.interfaces.ChainOfLongs;
-import org.conetex.runtime.instrument.interfaces.LinkedLong;
+import org.conetex.runtime.instrument.interfaces.counter.ChainOfLongs;
+import org.conetex.runtime.instrument.interfaces.counter.LinkedLong;
 
 public class Counter implements ChainOfLongs {
 

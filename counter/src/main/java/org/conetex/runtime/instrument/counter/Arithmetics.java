@@ -1,6 +1,6 @@
 package org.conetex.runtime.instrument.counter;
 
-import org.conetex.runtime.instrument.interfaces.ResultLongDividedByInt;
+import org.conetex.runtime.instrument.interfaces.arithmetic.ResultLongDividedByInt;
 
 public class Arithmetics {
 

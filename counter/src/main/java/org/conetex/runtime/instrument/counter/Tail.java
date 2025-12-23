@@ -1,6 +1,6 @@
 package org.conetex.runtime.instrument.counter;
 
-import org.conetex.runtime.instrument.interfaces.LinkedLong;
+import org.conetex.runtime.instrument.interfaces.counter.LinkedLong;
 
 final class Tail implements LinkedLong {
 
