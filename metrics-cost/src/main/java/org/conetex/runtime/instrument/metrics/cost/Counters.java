@@ -5,29 +5,7 @@ import org.conetex.runtime.instrument.counter.LongLimits;
 import org.conetex.runtime.instrument.counter.Counter;
 import org.conetex.runtime.instrument.interfaces.counter.ChainOfLongs;
 
-public final class CostCounters {
-
-    public final static int[] WEIGHTS = new int[] {
-            35,//165, // ArithmeticAddSubNeg
-            109,//890, // ArithmeticDivRem
-            43,//956, // ArithmeticMul
-            48,//352, // ArrayLoad
-            98,//901, // ArrayNew
-            65,//934, // ArrayStore
-            30,//769, // CompareInt
-            39,//560, // CompareLong
-            43,//956, // CompareObject
-            109,//890, // ExceptionThrow
-            52,//747, // FieldLoad
-            61,//539, // FieldStore
-            28,//571, // Jump
-            54,//945, // MethodCall
-            0,//  0, // MethodEntry
-            76,//923, // Monitor
-            50,//550, // VariableLoad
-            21,//978, // VariableStore
-            26,//374  // TypeCheck
-    };
+public final class Counters {
 
     public final static LongLimits CONFIG_MIN_MAX = new LongLimits(0L, 10L);
 
@@ -51,125 +29,146 @@ public final class CostCounters {
     public static final Counter VARIABLE_STORE = new Counter(CONFIG_MIN_MAX);
     public static final Counter TYPE_CHECK = new Counter(CONFIG_MIN_MAX);
 
-    public final static CountersWeighted CONFIG = new CountersWeighted(CONFIG_MIN_MAX,
+    public final static CountersWeighted CONFIG = new CountersWeighted(
+            CONFIG_MIN_MAX,
             new ChainOfLongs[]{
-                    CostCounters.ARITHMETIC_ADD_SUB_NEG,
-                    CostCounters.ARITHMETIC_DIV_REM,
-                    CostCounters.ARITHMETIC_MUL,
-                    CostCounters.ARRAY_LOAD,
-                    CostCounters.ARRAY_NEW,
-                    CostCounters.ARRAY_STORE,
-                    CostCounters.COMPARE_INT,
-                    CostCounters.COMPARE_LONG,
-                    CostCounters.COMPARE_OBJECT,
-                    CostCounters.EXCEPTION_THROW,
-                    CostCounters.FIELD_LOAD,
-                    CostCounters.FIELD_STORE,
-                    CostCounters.JUMP,
-                    CostCounters.METHOD_CALL,
-                    CostCounters.METHOD_ENTRY,
-                    CostCounters.MONITOR,
-                    CostCounters.VARIABLE_LOAD,
-                    CostCounters.VARIABLE_STORE,
-                    CostCounters.TYPE_CHECK
+                    Counters.ARITHMETIC_ADD_SUB_NEG,
+                    Counters.ARITHMETIC_DIV_REM,
+                    Counters.ARITHMETIC_MUL,
+                    Counters.ARRAY_LOAD,
+                    Counters.ARRAY_NEW,
+                    Counters.ARRAY_STORE,
+                    Counters.COMPARE_INT,
+                    Counters.COMPARE_LONG,
+                    Counters.COMPARE_OBJECT,
+                    Counters.EXCEPTION_THROW,
+                    Counters.FIELD_LOAD,
+                    Counters.FIELD_STORE,
+                    Counters.JUMP,
+                    Counters.METHOD_CALL,
+                    Counters.METHOD_ENTRY,
+                    Counters.MONITOR,
+                    Counters.VARIABLE_LOAD,
+                    Counters.VARIABLE_STORE,
+                    Counters.TYPE_CHECK
+            },
+            new int[] {
+                    35,//165, // ArithmeticAddSubNeg
+                    109,//890, // ArithmeticDivRem
+                    43,//956, // ArithmeticMul
+                    48,//352, // ArrayLoad
+                    98,//901, // ArrayNew
+                    65,//934, // ArrayStore
+                    30,//769, // CompareInt
+                    39,//560, // CompareLong
+                    43,//956, // CompareObject
+                    109,//890, // ExceptionThrow
+                    52,//747, // FieldLoad
+                    61,//539, // FieldStore
+                    28,//571, // Jump
+                    54,//945, // MethodCall
+                    0,//  0, // MethodEntry
+                    76,//923, // Monitor
+                    50,//550, // VariableLoad
+                    21,//978, // VariableStore
+                    26,//374  // TypeCheck
             }
-            ,
-            WEIGHTS);
+            );
 
 
     @SuppressWarnings("unused")
     public static void incrementArithmeticAddSubNeg() {
-        CostCounters.ARITHMETIC_ADD_SUB_NEG.increment();
+        Counters.ARITHMETIC_ADD_SUB_NEG.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementArithmeticDivRem() {
-        CostCounters.ARITHMETIC_DIV_REM.increment();
+        Counters.ARITHMETIC_DIV_REM.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementArithmeticMul() {
-        CostCounters.ARITHMETIC_MUL.increment();
+        Counters.ARITHMETIC_MUL.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementArrayLoad() {
-        CostCounters.ARRAY_LOAD.increment();
+        Counters.ARRAY_LOAD.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementArrayNew() {
-        CostCounters.ARRAY_NEW.increment();
+        Counters.ARRAY_NEW.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementArrayStore() {
-        CostCounters.ARRAY_STORE.increment();
+        Counters.ARRAY_STORE.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementCompareInt() {
-        CostCounters.COMPARE_INT.increment();
+        Counters.COMPARE_INT.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementCompareLong() {
-        CostCounters.COMPARE_LONG.increment();
+        Counters.COMPARE_LONG.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementCompareObject() {
-        CostCounters.COMPARE_OBJECT.increment();
+        Counters.COMPARE_OBJECT.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementExceptionThrow() {
-        CostCounters.EXCEPTION_THROW.increment();
+        Counters.EXCEPTION_THROW.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementFieldLoad() {
-        CostCounters.FIELD_LOAD.increment();
+        Counters.FIELD_LOAD.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementFieldStore() {
-        CostCounters.FIELD_STORE.increment();
+        Counters.FIELD_STORE.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementJump() {
-        CostCounters.JUMP.increment();
+        Counters.JUMP.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementMethodCall() {
-        CostCounters.METHOD_CALL.increment();
+        Counters.METHOD_CALL.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementMethodEntry() {
-        CostCounters.METHOD_ENTRY.increment();
+        Counters.METHOD_ENTRY.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementMonitor() {
-        CostCounters.MONITOR.increment();
+        Counters.MONITOR.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementVariableLoad() {
-        CostCounters.VARIABLE_LOAD.increment();
+        Counters.VARIABLE_LOAD.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementVariableStore() {
-        CostCounters.VARIABLE_STORE.increment();
+        Counters.VARIABLE_STORE.increment();
     }
 
     @SuppressWarnings("unused")
     public static void incrementTypeCheck() {
-        CostCounters.TYPE_CHECK.increment();
+        Counters.TYPE_CHECK.increment();
     }
 
 }

@@ -4,7 +4,11 @@ import org.conetex.runtime.instrument.interfaces.arithmetic.ResultLongDividedByI
 
 public class Arithmetics {
 
-    private record ResultLongDividedByIntImpl2(long value, int remainder, int fraction) implements ResultLongDividedByInt {}
+    private record Result(long value, int remainder, int fraction) implements ResultLongDividedByInt {
+        public String toString(){
+            return this.value + " (r: " + this.remainder + " | f: " + this.fraction + ")";
+        }
+    }
 
     public static long add(long a, long b) {
         long re = a + b;
@@ -76,7 +80,7 @@ public class Arithmetics {
         int remainingRemainder = (int) (remainder % weightsSum);
         int fraction = (remainingRemainder * scale) / weightsSum;
 
-        return new ResultLongDividedByIntImpl2(
+        return new Result(
                 weightedAvr,
                 remainingRemainder,
                 (fraction < 0 ? fraction * -1 : fraction)

@@ -31,30 +31,30 @@ public class Transformer implements RetransformingClassFileTransformer {
 
     @Override
     public CountersWeighted getConfig() {
-        return CostCounters.CONFIG;
+        return Counters.CONFIG;
     }
 
     @Override
     public void resetCounters() {
-        CostCounters.ARITHMETIC_ADD_SUB_NEG.reset();
-        CostCounters.ARITHMETIC_DIV_REM.reset();
-        CostCounters.ARITHMETIC_MUL.reset();
-        CostCounters.ARRAY_LOAD.reset();
-        CostCounters.ARRAY_NEW.reset();
-        CostCounters.ARRAY_STORE.reset();
-        CostCounters.COMPARE_INT.reset();
-        CostCounters.COMPARE_LONG.reset();
-        CostCounters.COMPARE_OBJECT.reset();
-        CostCounters.EXCEPTION_THROW.reset();
-        CostCounters.FIELD_LOAD.reset();
-        CostCounters.FIELD_STORE.reset();
-        CostCounters.JUMP.reset();
-        CostCounters.METHOD_CALL.reset();
-        CostCounters.METHOD_ENTRY.reset();
-        CostCounters.MONITOR.reset();
-        CostCounters.VARIABLE_LOAD.reset();
-        CostCounters.VARIABLE_STORE.reset();
-        CostCounters.TYPE_CHECK.reset();
+        Counters.ARITHMETIC_ADD_SUB_NEG.reset();
+        Counters.ARITHMETIC_DIV_REM.reset();
+        Counters.ARITHMETIC_MUL.reset();
+        Counters.ARRAY_LOAD.reset();
+        Counters.ARRAY_NEW.reset();
+        Counters.ARRAY_STORE.reset();
+        Counters.COMPARE_INT.reset();
+        Counters.COMPARE_LONG.reset();
+        Counters.COMPARE_OBJECT.reset();
+        Counters.EXCEPTION_THROW.reset();
+        Counters.FIELD_LOAD.reset();
+        Counters.FIELD_STORE.reset();
+        Counters.JUMP.reset();
+        Counters.METHOD_CALL.reset();
+        Counters.METHOD_ENTRY.reset();
+        Counters.MONITOR.reset();
+        Counters.VARIABLE_LOAD.reset();
+        Counters.VARIABLE_STORE.reset();
+        Counters.TYPE_CHECK.reset();
     }
 
     private final Set<String> handledClasses;
