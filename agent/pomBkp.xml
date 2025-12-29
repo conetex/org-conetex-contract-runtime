@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.conetex.runtime.instrument</groupId>
+        <artifactId>parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>agent</artifactId>
+
+    <dependencies>
+        <!-- MUST BE EMPTY                                    -->
+        <!-- AVOID DEPENDENCIES TO INSTRUMENT IMPLEMENTATIONS -->
+       <!-- <dependency>
+            <groupId>org.conetex.runtime.instrument</groupId>
+            <artifactId>metrics-cost</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>-->
+    </dependencies>
+    <!-- IMPLICIT DEPENDENCY: -->
+    <!-- INSTRUMENT IMPLEMENTATIONS USED BY THIS AGENT MUST   -->
+    <!-- IMPLEMENT INTERFACES DEFINED HERE:
+    <project>
+        <groupId>org.conetex.runtime.instrument</groupId>
+        <artifactId>interfaces</artifactId>
+    </project>                                                -->
+
+    <build>
+        <plugins>
+            <!-- create the JAR with dependencies - even there are none -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <finalName>${project.artifactId}-${project.version}-fat</finalName>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <!-- do not create the normal JAR without dependencies -->
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <archive>
+                        <manifest>
+                            <!-- JAR has no main -->
+                            <!-- <mainClass>org.conetex.runtime.instrument.Agent</mainClass> -->
+                        </manifest>
+                        <manifestEntries>
+                            <Premain-Class>org.conetex.runtime.instrument.Agent</Premain-Class>
+                            <Agent-Class>org.conetex.runtime.instrument.Agent</Agent-Class>
+                            <Can-Redefine-Classes>true</Can-Redefine-Classes>
+                            <Can-Retransform-Classes>true</Can-Retransform-Classes>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-agent-jar</id>
+                        <phase>package</phase>
+                        <goals><goal>single</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

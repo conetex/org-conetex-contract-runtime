@@ -1,0 +1,10 @@
+modulex org.conetex.runtime.instrument.metrics {
+    exports org.conetex.runtime.instrument.metrics.cost;
+    requires org.conetex.runtime.instrument.interfaces;
+    requires org.conetex.runtime.instrument.counter;
+    requires org.objectweb.asm;
+    requires java.instrument;
+    requires org.objectweb.asm.commons;
+    opens org.conetex.runtime.instrument.metrics.cost
+        to org.conetex.runtime.instrument;
+}

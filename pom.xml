@@ -22,9 +22,8 @@
         <module>counter</module>
         <module>metrics-cost</module>
         <module>agent</module>
-        <module>example</module>
-        <module>example2</module>
         <module>test</module>
+        <module>example</module>
     </modules>
 
 </project>

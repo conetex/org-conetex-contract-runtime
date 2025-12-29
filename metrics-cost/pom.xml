@@ -34,35 +34,48 @@
 
     <build>
         <plugins>
-            <!-- create the JAR with dependencies -->
+
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.6.0</version>
-                <configuration>
-                    <finalName>${project.artifactId}-${project.version}-fat</finalName>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <!-- do not create the normal JAR without dependencies -->
-                    <appendAssemblyId>false</appendAssemblyId>
-                    <archive>
-                        <manifest>
-                            <!-- JAR has no main -->
-                        </manifest>
-                        <manifestEntries>
-                            <Transformer-Class>org.conetex.runtime.instrument.metrics.cost.Transformer</Transformer-Class>
-                            <appendToBootstrapClassLoaderSearch>true</appendToBootstrapClassLoaderSearch>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
+
                 <executions>
                     <execution>
-                        <id>make-transformer-jar</id>
                         <phase>package</phase>
-                        <goals><goal>single</goal></goals>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+
+                        <configuration>
+                            <!-- Name des Fat-JARs -->
+                            <finalName>${project.artifactId}-${project.version}-fat</finalName>
+
+                            <!-- Manifest-Einträge -->
+                            <transformers>
+
+                                <!-- Standard-Manifest -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Transformer-Class>org.conetex.runtime.instrument.metrics.cost.Transformer</Transformer-Class>
+                                        <appendToBootstrapClassLoaderSearch>true</appendToBootstrapClassLoaderSearch>
+                                    </manifestEntries>
+                                </transformer>
+
+                                <!-- Falls du META-INF/services nutzt -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+
+                            </transformers>
+
+                            <!-- Wichtig: module-info.class behalten -->
+                            <shadeSourcesContent>true</shadeSourcesContent>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 

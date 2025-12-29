@@ -18,9 +18,13 @@ import java.util.TreeSet;
 
 public class Transformer implements RetransformingClassFileTransformer {
 
-    public static final String UNTRANSFORMABLE_PACKAGE_SELF = "org/conetex/runtime/instrument";
+    public static final String UNTRANSFORMABLE_PACKAGE_SELF = "xorg/conetex/runtime/instrument";
+
+    public static final String UNTRANSFORMABLE_CLASSES_SELF_TEST = "xorg/conetex/runtime/instrument/test/jar/Main";
 
     public static final String UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM = "org/objectweb/asm/";
+
+    public static final int STATUS_BLOCKED = 403;
 
     private String mainClassJvmName;
 
@@ -103,14 +107,27 @@ public class Transformer implements RetransformingClassFileTransformer {
 
         this.handledClasses.add(classJvmName);
 
-        if (classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM)
-                || classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_SELF)
-        ) { // skip transform
+        if ( classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM) ||
+                classJvmName.startsWith(UNTRANSFORMABLE_CLASSES_SELF_TEST)    ) {
             System.out.println("t noTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
                     classBeingRedefined + " (classBeingRedefined) | " +
                     (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
+            // skip transform
             this.transformSkippedClasses.add(classJvmName);
             return classFileBuffer;
+        }
+
+        if ( classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_SELF) ) {
+            System.err.println("blocked " + classJvmName);
+            // BLOCK class
+            // since this class should have been loaded before transformer was added to instrumentation.
+            // retransform for this class should have been skipped.
+            //throw new RuntimeException("blocked " + classJvmName);
+            System.err.println("blocked transform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
+                    classBeingRedefined + " (classBeingRedefined) | " +
+                    (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
+            //Runtime.getRuntime().halt(STATUS_BLOCKED);
+            System.exit(STATUS_BLOCKED);
         }
 
         System.out.println("t doTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
@@ -147,7 +164,6 @@ public class Transformer implements RetransformingClassFileTransformer {
                 continue;
             }
 
-            // maybe obsolete
             if( classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM) ||
                     classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_SELF)
             ) { // skip retransform

@@ -15,6 +15,7 @@
 
     <modules>
         <module>jar</module>
+        <module>jar-blocked</module>
         <module>integration</module>
     </modules>
 

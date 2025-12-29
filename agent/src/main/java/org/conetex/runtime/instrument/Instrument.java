@@ -13,10 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
+import java.util.jar.*;
 
 // org.conetex.contract.runtime is the right place
 public class Instrument {
@@ -31,7 +28,7 @@ public class Instrument {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-        Path agentDir = Files.isDirectory(agentPath) ? agentPath : agentPath.getParent();
+        Path agentDir = Files.isDirectory(agentPath) && !agentPath.endsWith("classes") ? agentPath : agentPath.getParent();
 
         Map<String, String> args = parseAgentArgs(agentArgs);
 
@@ -41,9 +38,10 @@ public class Instrument {
         }
         Path bootstrapPath = agentDir.resolve(bootstrapJarPath);
         System.out.println("transformer: " + bootstrapPath);
+        File bootstrapFile = bootstrapPath.toFile();
         JarFile bootstrapJar;
         try {
-            bootstrapJar = new JarFile(bootstrapPath.toFile());
+            bootstrapJar = new JarFile(bootstrapFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -53,7 +51,14 @@ public class Instrument {
         if(! appendToBootstrapClassLoaderSearchStr.equals("false")){
             // TODO we do not want org.conetex.contract.runtime.instrument:* loaded before this:
             inst.appendToBootstrapClassLoaderSearch(bootstrapJar);
-      }
+        }
+
+        // load classes of transformer before adding it to the instrumentation
+        try {
+            loadAllClassesFromJar(bootstrapFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("premain Redefine supported: " + inst.isRedefineClassesSupported());
         System.out.println("premain Retransform supported: " + inst.isRetransformClassesSupported());
@@ -90,6 +95,7 @@ public class Instrument {
             throw new RuntimeException(e);
         }
 
+        System.out.println("premain module '" + Instrument.class.getModule());
         System.out.println("premain prepare transformer '" + agentArgs + "' | '" + inst + "'");
         ClassFileTransformer transformer;
         try {
@@ -163,7 +169,27 @@ public class Instrument {
 
     }
 
-
+    public static void loadAllClassesFromJar(File jarFile//, ClassLoader loader
+                                             ) throws IOException {
+        try (JarInputStream jar = new JarInputStream(new FileInputStream(jarFile))) {
+            JarEntry entry;
+            while ((entry = jar.getNextJarEntry()) != null) {
+                if (entry.getName().endsWith(".class")) {
+                    String className = entry.getName()
+                            .replace('/', '.')
+                            .replace(".class", "");
+                    System.out.println("load - " + className);
+                    try {
+                        //Class.forName(className, true, loader);
+                        Class.forName(className);
+                    } catch (Throwable t) {
+                        System.out.println("error at load - " + className + " " + t.getMessage());
+                        // optional: ignorieren oder loggen
+                    }
+                }
+            }
+        }
+    }
 
 
 

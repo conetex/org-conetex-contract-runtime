@@ -8,10 +8,28 @@ import org.conetex.runtime.instrument.metrics.cost.Counters;
 
 public class Main {
 
-    public static final String TEST_FAILED = "test failed";
-    public static final String TEST_OK = "test ok";
+    public static final String TEST_FAILED = "test FAILED";
+    public static final String TEST_OK = "test OK";
 
     public static void main(String[] args) {
+
+        warmup();
+
+        // test
+        testsIncrementableInterfaceDefault();
+        testsIncrementableInterfaceBlock();
+
+        testsIncrementableCounterDefault();
+        testsIncrementableCounterBlock();
+
+        testsChainsOfLongsCountersWeighted();
+        testsChainsOfLongsInterface();
+
+        testsCountersReset();
+        testsCountersBlockIncrement();
+    }
+
+    static void warmup() {
         // warmup 1
         for (int i = 0; i < Counters.COUNTERS.length; i++) {
             Incrementable c = Counters.COUNTERS[i];
@@ -25,22 +43,13 @@ public class Main {
 
         // warmup 2
         Counters.CONFIG.average();
-
-        // test
-        testsIncrementableInterfaceDefault();
-        testsIncrementableInterfaceBlock();
-        testsIncrementableCounterDefault();
-        testsIncrementableCounterBlock();
-        testsChainsOfLongsCountersWeighted();
-        testsChainsOfLongsInterface();
-        testsCountersReset();
-        testCountersBlockIncrement();
     }
 
-    public static void testsIncrementableCounterDefault() {
+    static String testsIncrementableCounterDefault() {
         String testName = "Counter (Incrementable) | default increment";
         long expected = 1;
 
+        StringBuilder msg = new StringBuilder();
         for(int i = 0; i < Counters.COUNTERS.length; i++){
             Counter c = Counters.COUNTERS[i];
             c.reset();
@@ -48,15 +57,16 @@ public class Main {
             c.increment();
             long counterAfter = c.peek().getValue();
 
-            outputResult(counterAfter, counterBefore, expected, testName, i);
-
+            msg.append(outputResult(counterAfter, counterBefore, expected, testName, i));
         }
+        return msg.toString();
     }
 
-    public static void testsIncrementableCounterBlock() {
+    static String testsIncrementableCounterBlock() {
         String testName = "Counter (Incrementable) | blocked increment";
         long expected = 0;
 
+        StringBuilder msg = new StringBuilder();
         for(int i = 0; i < Counters.COUNTERS.length; i++){
             Counter c = Counters.COUNTERS[i];
             c.reset();
@@ -66,15 +76,16 @@ public class Main {
             c.blockIncrement(false);
             long counterAfter = c.peek().getValue();
 
-            outputResult(counterAfter, counterBefore, expected, testName, i);
-
+            msg.append(outputResult(counterAfter, counterBefore, expected, testName, i));
         }
+        return msg.toString();
     }
 
-    public static void testsIncrementableInterfaceDefault() {
+    static String testsIncrementableInterfaceDefault() {
         String testName = "Incrementable | default increment";
         long expected = 1;
 
+        StringBuilder msg = new StringBuilder();
         for (int i = 0; i < Counters.COUNTERS.length; i++) {
             Incrementable c = Counters.COUNTERS[i];
             c.reset();
@@ -83,16 +94,16 @@ public class Main {
             c.increment();
             long counterAfter = c.peek().getValue();
 
-            outputResult(counterAfter, counterBefore, expected, testName, i);
-
+            msg.append(outputResult(counterAfter, counterBefore, expected, testName, i));
         }
-
+        return msg.toString();
     }
 
-    public static void testsIncrementableInterfaceBlock() {
+    static String testsIncrementableInterfaceBlock() {
         String testName = "Incrementable | blocked increment";
         long expected = 0;
 
+        StringBuilder msg = new StringBuilder();
         for(int i = 0; i < Counters.COUNTERS.length; i++){
             Incrementable c = Counters.COUNTERS[i];
             c.reset();
@@ -102,15 +113,16 @@ public class Main {
             c.blockIncrement(false);
             long counterAfter = c.peek().getValue();
 
-            outputResult(counterAfter, counterBefore, expected, testName, i);
-
+            msg.append(outputResult(counterAfter, counterBefore, expected, testName, i));
         }
+        return msg.toString();
     }
 
-    public static void testsChainsOfLongsCountersWeighted() {
+    static String testsChainsOfLongsCountersWeighted() {
         String testName = "CountersWeighted (ChainsOfLongs) | average";
         long expected = 0;
 
+        StringBuilder msg = new StringBuilder();
         CountersWeighted testObject = Counters.CONFIG;
         for (int i = 0; i < Counters.COUNTERS.length; i++) {
             Counter c = Counters.COUNTERS[i];
@@ -119,16 +131,16 @@ public class Main {
             Counters.CONFIG.average();
             long counterAfter = c.peek().getValue();
 
-
-            outputResult(counterAfter, counterBefore, expected, testName, i);
-
+            msg.append(outputResult(counterAfter, counterBefore, expected, testName, i));
         }
+        return msg.toString();
     }
 
-    public static void testsChainsOfLongsInterface() {
+    static String testsChainsOfLongsInterface() {
         String testName = "CountersWeighted (ChainsOfLongs) | average";
         long expected = 0;
 
+        StringBuilder msg = new StringBuilder();
         ChainsOfLongs testObject = Counters.CONFIG;
         for (int i = 0; i < Counters.COUNTERS.length; i++) {
             Counter c = Counters.COUNTERS[i];
@@ -137,16 +149,16 @@ public class Main {
             testObject.average();
             long counterAfter = c.peek().getValue();
 
-
-            outputResult(counterAfter, counterBefore, expected, testName, i);
-
+            msg.append(outputResult(counterAfter, counterBefore, expected, testName, i));
         }
+        return msg.toString();
     }
 
-    public static void testsCountersReset() {
+    static String testsCountersReset() {
         String testName = "Counters | reset";
         long expected = 0;
 
+        StringBuilder msg = new StringBuilder();
         for(int i = 0; i < Counters.COUNTERS.length; i++){
             Counter c = Counters.COUNTERS[i];
             Counters.reset();
@@ -154,16 +166,16 @@ public class Main {
             Counters.reset();
             long counterAfter = c.peek().getValue();
 
-            outputResult(counterAfter, counterBefore, expected, testName, i);
-
+            msg.append(outputResult(counterAfter, counterBefore, expected, testName, i));
         }
+        return msg.toString();
     }
 
-    public static void testCountersBlockIncrement() {
-
+    static String testsCountersBlockIncrement() {
         String testName = "Counters | blockIncrement";
         long expected = 0;
 
+        StringBuilder msg = new StringBuilder();
         for(int i = 0; i < Counters.COUNTERS.length; i++){
             long counterBefore = Counters.COUNTERS[i].peek().getValue();
             Counters.blockIncrement(true);
@@ -176,19 +188,22 @@ public class Main {
             Counters.blockIncrement(false);
             long counterAfter = Counters.COUNTERS[i].peek().getValue();
 
-            outputResult(counterAfter, counterBefore, expected, testName, i);
-
+            msg.append(outputResult(counterAfter, counterBefore, expected, testName, i));
         }
-
+        return msg.toString();
     }
 
-    private static void outputResult(long counterAfter, long counterBefore, long expected, String testName, int i) {
+    private static String outputResult(long counterAfter, long counterBefore, long expected, String testName, int i) {
         long counterDiff = (counterAfter - counterBefore);
+        String msg = ": '" + testName + "', on: '" + i + "', expected: '" + expected + "', actual: " + counterAfter + " - " + counterBefore + " = " + counterDiff + System.lineSeparator();
         if (counterDiff != expected) {
-            System.err.println(TEST_FAILED + ": '" + testName + "', on: '" + i + "', expected: '" + expected + "', actual: " + counterAfter + " - " + counterBefore + " = " + counterDiff); // ok
+            msg = TEST_FAILED + msg;
+            System.err.print(msg); // ok
         } else {
-            System.out.println(TEST_OK + ": '" + testName + "', on: '" + i + "', expected: '" + expected + "', actual: " + counterAfter + " - " + counterBefore + " = " + counterDiff); // ok
+            msg = TEST_OK     + msg;
+            System.out.print(msg); // ok
         }
+        return msg;
     }
 
 }
