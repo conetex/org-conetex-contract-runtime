@@ -88,7 +88,8 @@ public class Transformer implements RetransformingClassFileTransformer {
         System.out.println("transform: " + loader + " (loader) | " + classJvmName +
                 " (classJvmName) | " + classBeingRedefined + " (classBeingRedefined) | " +
                 (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain) | " + module + "(module)");
-        return transform(loader, classJvmName, classBeingRedefined, protectionDomain, classFileBuffer);
+        //return transform(loader, classJvmName, classBeingRedefined, protectionDomain, classFileBuffer);
+        return classFileBuffer;
     }
 
     @Override
@@ -130,9 +131,9 @@ public class Transformer implements RetransformingClassFileTransformer {
                     classBeingRedefined + " (classBeingRedefined) | " +
                     (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
             //Runtime.getRuntime().halt(STATUS_BLOCKED);
-            System.exit(STATUS_BLOCKED);// todo for whatever reason in module mode Counters appears here. so we have to check for package-self smarter
-            //this.transformSkippedClasses.add(classJvmName);
-            //return classFileBuffer;
+            //System.exit(STATUS_BLOCKED);// todo for whatever reason in module mode Counters appears here. so we have to check for package-self smarter
+            this.transformSkippedClasses.add(classJvmName);
+            return classFileBuffer;
         }
 
         System.out.println("t doTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +

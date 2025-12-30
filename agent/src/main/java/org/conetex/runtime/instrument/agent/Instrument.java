@@ -46,16 +46,72 @@ public class Instrument {
             throw new RuntimeException(e);
         }
 
-        String appendToBootstrapClassLoaderSearchStr = getMainAttributeFromJar(bootstrapJar, "appendToBootstrapClassLoaderSearch");
-        assert appendToBootstrapClassLoaderSearchStr != null;
-        if(! appendToBootstrapClassLoaderSearchStr.equals("false")){ // this is not needed if -Xbootclasspath/a:/path/to/bootstrapJar todo: can we find out at runtime?
-            // TODO we do not want org.conetex.contract.runtime.instrument:* loaded before this:
-            inst.appendToBootstrapClassLoaderSearch(bootstrapJar); // warning will not occur if -Xshare:off todo: can we find out at runtime?
-        }
-
-        // load classes of transformer before adding it to the instrumentation
+        String transformerClassStr = getMainAttributeFromJar(bootstrapJar, "Transformer-Class");
+        // is transformer loadable?
+        Class<?> transformerClass = null;
         try {
-            loadAllClassesFromJar(bootstrapFile);
+            transformerClass = Class.forName(transformerClassStr);
+        } catch (ClassNotFoundException e) {
+            System.out.println("1 can not load " + transformerClassStr + " ");
+        }
+        if(transformerClass == null){
+            try {
+                transformerClass = Class.forName(transformerClassStr, true, null);
+            } catch (ClassNotFoundException e) {
+                System.out.println("2 can not load " + transformerClassStr + " ");
+            }
+        }
+        if(transformerClass == null){
+            try {
+                transformerClass = Class.forName(transformerClassStr, true, ClassLoader.getSystemClassLoader());
+            } catch (ClassNotFoundException e) {
+                System.out.println("3 can not load " + transformerClassStr + " ");
+            }
+        }
+        if(transformerClass == null){
+
+            String appendToBootstrapClassLoaderSearchStr = getMainAttributeFromJar(bootstrapJar, "appendToBootstrapClassLoaderSearch");
+            assert appendToBootstrapClassLoaderSearchStr != null;
+            if(! appendToBootstrapClassLoaderSearchStr.equals("false")){ // this is not needed if -Xbootclasspath/a:/path/to/bootstrapJar todo: can we find out at runtime?
+                // TODO we do not want org.conetex.contract.runtime.instrument:* loaded before this:
+                inst.appendToBootstrapClassLoaderSearch(bootstrapJar); // warning will not occur if -Xshare:off todo: can we find out at runtime?
+                System.out.println("added jar to BootstrapClassLoaderSearch");
+            }
+        }
+        if(transformerClass == null){
+            try {
+                transformerClass = Class.forName(transformerClassStr);
+            } catch (ClassNotFoundException e) {
+                System.out.println("1b can not load " + transformerClassStr + " ");
+            }
+        }
+        if(transformerClass == null){
+            try {
+                transformerClass = Class.forName(transformerClassStr, true, null);
+            } catch (ClassNotFoundException e) {
+                System.out.println("2b can not load " + transformerClassStr + " ");
+            }
+        }
+        if(transformerClass == null){
+            try {
+                transformerClass = Class.forName(transformerClassStr, true, ClassLoader.getSystemClassLoader());
+            } catch (ClassNotFoundException e) {
+                System.err.println("3b can not load " + transformerClassStr + " ");
+                throw new RuntimeException(e);
+            }
+        }
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+        ClassLoader instrumentClassLoader = Instrument.class.getClassLoader();
+        ClassLoader instClassLoader = inst.getClass().getClassLoader();
+        ClassLoader transformerClassLoader = transformerClass.getClassLoader();
+
+        System.out.println("Instrument.class.getModule(): " + Instrument.class.getModule());
+        System.out.println("inst.getClass().getModule(): " + inst.getClass().getModule());
+        System.out.println("transformerClass.getModule(): " + transformerClass.getModule());
+
+        /* load classes of transformer before adding it to the instrumentation*/
+        try {
+            loadAllClassesFromJar(bootstrapFile, transformerClassLoader);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -87,8 +143,6 @@ public class Instrument {
         Class<?>[] classes = inst.getAllLoadedClasses();
         System.out.println("premain allLoadedClasses size: " + classes.length);
 
-        String transformerClassStr = getMainAttributeFromJar(bootstrapJar, "Transformer-Class");
-        Class<?> transformerClass;
         try {
             transformerClass = Class.forName(transformerClassStr, true, ClassLoader.getSystemClassLoader());
         } catch (ClassNotFoundException e) {
@@ -112,6 +166,10 @@ public class Instrument {
             throw new RuntimeException("Failed to call initMainClassJvmName", e);
         }
         System.out.println("premain createdTransformer " + transformer);
+
+
+
+
 
         inst.addTransformer(transformer, true);
         System.out.println("premain transformer added");
@@ -169,7 +227,7 @@ public class Instrument {
 
     }
 
-    public static void loadAllClassesFromJar(File jarFile//, ClassLoader loader
+    public static void loadAllClassesFromJar(File jarFile, ClassLoader loader
                                              ) throws IOException {
         try (JarInputStream jar = new JarInputStream(new FileInputStream(jarFile))) {
             JarEntry entry;
@@ -180,8 +238,8 @@ public class Instrument {
                             .replace(".class", "");
                     System.out.println("load - " + className);
                     try {
-                        //Class.forName(className, true, loader);
-                        Class.forName(className);
+                        Class.forName(className, true, loader);
+                        //Class.forName(className);
                     } catch (Throwable t) {
                         System.out.println("error at load - " + className + " " + t.getMessage());
                         // optional: ignorieren oder loggen
