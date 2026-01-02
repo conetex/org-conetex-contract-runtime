@@ -19,7 +19,7 @@ public class Transformer implements RetransformingClassFileTransformer {
     public static final String UNTRANSFORMABLE_PACKAGE_SELF = "org/conetex/runtime/instrument";
 
     public static final String UNTRANSFORMABLE_CLASSES_SELF_TEST = "org/conetex/runtime/instrument/test/jar/Main";
-    public static final String UNTRANSFORMABLE_CLASSES_SELF_TEST_M = "org/conetex/runtime/instrument/test/jar/module/Main";
+    public static final String UNTRANSFORMABLE_CLASSES_SELF_TEST_M = "org/conetex/runtime/instrument/bootstrap/Bootstrap";
 
     public static final String UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM = "org/objectweb/asm/";
 
@@ -116,7 +116,30 @@ public class Transformer implements RetransformingClassFileTransformer {
 
         if ( classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM) ||
                 classJvmName.startsWith(UNTRANSFORMABLE_CLASSES_SELF_TEST)  ||
-                classJvmName.startsWith(UNTRANSFORMABLE_CLASSES_SELF_TEST_M)
+                classJvmName.startsWith(UNTRANSFORMABLE_CLASSES_SELF_TEST_M) ||
+
+                classJvmName.startsWith("java") ||
+                classJvmName.startsWith("jdk") ||
+                classJvmName.startsWith("sum") ||
+
+                classJvmName.startsWith("java/lang/invoke/") ||
+                classJvmName.startsWith("java/util/Objects") ||
+                classJvmName.startsWith("java/util/Arrays") ||
+
+                classJvmName.startsWith("sun/instrument") ||
+                classJvmName.startsWith("java/lang/reflect") ||
+                classJvmName.startsWith("jdk/internal")  ||
+
+                classJvmName.startsWith("java/util/TreeSet") ||
+                classJvmName.startsWith("java/lang/String") ||
+                classJvmName.startsWith("java/io") ||
+                classJvmName.startsWith("java/nio") ||
+                classJvmName.startsWith("sun/nio") ||
+                classJvmName.startsWith("java/util/concurrent") ||
+                classJvmName.startsWith("com/intellij")
+
+
+
                 ) {
             System.out.println("t noTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
                     classBeingRedefined + " (classBeingRedefined) | " +
@@ -156,7 +179,9 @@ public class Transformer implements RetransformingClassFileTransformer {
 
     @Override
     public void triggerRetransform(Instrumentation inst, Class<?>[] allClasses) {
+        int i = 0;
         for (Class<?> clazz : allClasses) {
+            System.out.println("retransform " + (i++) + "/" + allClasses.length);
             String classJvmName = clazz.getName().replace('.', '/');
 
 //            System.out.println("retransform .....: '" + classJvmName + "' (classJvmName) '" + clazz.getModule() + "' (module) '" + clazz.getClassLoader() + "' (classLoader)");
@@ -175,7 +200,9 @@ public class Transformer implements RetransformingClassFileTransformer {
 			
 			// maybe obsolete
             if( classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM) ||
-                    classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_SELF)
+                    classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_SELF) ||
+                    classJvmName.startsWith("java/lang/") ||
+                    classJvmName.startsWith("jdk/internal")
             ) { // skip retransform
                 System.out.println("retransform skipped: '" + classJvmName + "' (classJvmName)");
                 continue;
@@ -188,6 +215,22 @@ public class Transformer implements RetransformingClassFileTransformer {
                         e.getMessage());
                 continue;
             }
+            catch (Exception e) {
+                System.err.println("retransform failed for'" + clazz + "' (class). Exception: " +
+                        e.getMessage());
+                continue;
+            }
+            catch (Error e) {
+                System.err.println("retransform failed for'" + clazz + "' (class). Error: " +
+                        e.getMessage());
+                continue;
+            }
+            catch (Throwable e) {
+                System.err.println("retransform failed for'" + clazz + "' (class). Throwable: " +
+                        e.getMessage());
+                continue;
+            }
+
             System.out.println("retransform triggered for '" + clazz + "' (class) || '" + classJvmName +
                     "' (classJvmName) -->");
         }

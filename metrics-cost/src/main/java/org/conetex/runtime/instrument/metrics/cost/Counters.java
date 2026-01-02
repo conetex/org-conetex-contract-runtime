@@ -4,10 +4,12 @@ import org.conetex.runtime.instrument.counter.CountersWeighted;
 import org.conetex.runtime.instrument.counter.LongLimits;
 import org.conetex.runtime.instrument.counter.Counter;
 
+import java.lang.invoke.*;
+
 public final class Counters {
 
     static {
-        System.err.println("loaded: " + Counters.class + " (class) - " + Counters.class.getModule() + " (module) - " + Counter.class.getClassLoader() + " (loader)");
+        System.out.println("Counters loaded: " + Counters.class + " (class) - " + Counters.class.getModule() + " (module) - " + Counter.class.getClassLoader() + " (loader)");
     }
 
     public final static LongLimits CONFIG_MIN_MAX = new LongLimits(0L, Long.MAX_VALUE);
@@ -122,6 +124,13 @@ public final class Counters {
         Counters.ARRAY_STORE.increment();
     }
 
+    // Bootstrap method
+    public static CallSite bootstrapIncrementCompareInt(MethodHandles.Lookup lookup, String name, MethodType type) throws NoSuchMethodException, IllegalAccessException {
+        // Reference to the incrementCompareInt implementation
+        MethodHandle targetMethodHandle = lookup.findStatic(Counters.class, "incrementCompareInt", MethodType.methodType(void.class));
+        // Return a CallSite that links to the targetMethodHandle directly
+        return new ConstantCallSite(targetMethodHandle);
+    }
     @SuppressWarnings("unused")
     public static void incrementCompareInt() {
         Counters.COMPARE_INT.increment();

@@ -305,7 +305,11 @@ public class Instrument {
 
         Class<?> transformerClass = null;
 
-        //loadClassFromModule(transformerClassStr, "org.conetex.runtime.instrument.metrics.cost");
+        try {
+            Class.forName("org.conetex.runtime.instrument.bootstrap.Bootstrap", true, null);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("can not bootstrap " + e.getMessage());
+        }
         // load transformer - try module mode
         Map<String, Class<?>> loadedTransformerClasses = loadClassesFromModules(transformerClassNamesToLoad);
         transformerClass = loadedTransformerClasses.get(transformerClassStr);
@@ -326,7 +330,7 @@ public class Instrument {
             }
         }
 
-        if(transformerClass == null){
+        /*if(transformerClass == null){
             // load transformer - try module patch agent mode
             try {
                 transformerClass = Class.forName(transformerClassStr, true, Instrument.class.getClassLoader());
@@ -337,7 +341,7 @@ public class Instrument {
             if(transformerClass != null) {
                 loadAllClassesFromJar(transformerClassNamesToLoad, Instrument.class.getClassLoader());
             }
-        }
+        }*/
 
         if(transformerClass == null){
             // load transformer - try classpath mode
@@ -494,9 +498,6 @@ public class Instrument {
         System.out.println("premain createdTransformer " + transformer);
 
 
-
-
-
         inst.addTransformer(transformer, true);
         System.out.println("premain transformer added");
 
@@ -504,9 +505,11 @@ public class Instrument {
         try {
             Method retransformMethod = transformer.getClass().getMethod("triggerRetransform", Instrumentation.class, Class[].class);
             retransformMethod.invoke(transformer, inst, inst.getAllLoadedClasses());
+            System.out.println("retransformed");
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException("Failed to call triggerRetransform", e);
         }
+
 
         // call resetCounters( )
         /*
@@ -517,6 +520,7 @@ public class Instrument {
             throw new RuntimeException("Failed to call resetCounters", e);
         }
         */
+
 
         // add Shutdown-Hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
