@@ -7,12 +7,13 @@
         <groupId>org.conetex.runtime.instrument</groupId>
         <artifactId>parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>metrics-cost-bootstrap</artifactId>
+    <artifactId>metrics-cost-unnamed</artifactId>
 
     <properties>
-        <bootstrap.class>org.conetex.runtime.instrument.metrics.cost.bootstrap.Bootstrap</bootstrap.class>
+        <bootstrap.class>org.conetex.runtime.instrument.metrics.cost.unnamed.CounterMethods</bootstrap.class>
     </properties>
 
     <build>

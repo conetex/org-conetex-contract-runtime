@@ -92,6 +92,7 @@ public final class Counters {
         }
     }
 
+
     @SuppressWarnings("unused")
     public static void incrementArithmeticAddSubNeg() {
         Counters.ARITHMETIC_ADD_SUB_NEG.increment();

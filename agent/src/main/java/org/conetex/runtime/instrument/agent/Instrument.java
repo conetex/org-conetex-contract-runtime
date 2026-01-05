@@ -479,9 +479,6 @@ public class Instrument {
             }
         }));
         */
-        System.out.println("premain end");
-/*
-
 
         try {
             Method blockIncrementMethod = transformer.getClass().getMethod("blockIncrement", boolean.class);
@@ -489,7 +486,9 @@ public class Instrument {
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException("Failed to call blockIncrement(false)", e);
         }
-*/
+
+        System.out.println("premain end");
+
     }
 
     private static Class<?> loadCoreClass(Instrumentation inst,

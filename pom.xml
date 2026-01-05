@@ -21,7 +21,7 @@
         <module>interfaces</module>
         <module>counter</module>
         <module>metrics-cost</module>
-        <module>metrics-cost-bootstrap</module>
+        <module>metrics-cost-unnamed</module>
         <module>agent</module>
         <module>test</module>
         <module>example</module>

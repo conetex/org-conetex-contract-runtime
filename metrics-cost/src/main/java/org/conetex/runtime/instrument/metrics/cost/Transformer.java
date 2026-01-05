@@ -16,12 +16,33 @@ import java.util.TreeSet;
 
 public class Transformer implements RetransformingClassFileTransformer {
 
-    public static final String UNTRANSFORMABLE_PACKAGE_SELF = "org/conetex/runtime/instrument";
+    public static final String[] UNTRANSFORMABLE_PACKAGES = {
+            "java/lang/invoke/" , // needed for bootstrap calls
 
-    public static final String UNTRANSFORMABLE_CLASSES_SELF_TEST = "xjava/lang/invoke";//"java/io/UnsupportedEncodingException";//""org/conetex/runtime/instrument/test/jar/Main";//
-    public static final String UNTRANSFORMABLE_CLASSES_SELF_TEST_M = "xxjava/lang/invoke/MethodHandle$1";//"xjava/lang/invoke";//"sun";//"com/intellij/rt";
+            // unblock test-classes
+            "org/conetex/runtime/instrument/test/jar/Main" ,      // todo protect this better (nobody should create a package like this)
+            "org/conetex/runtime/instrument/test/jar/module/Main" // maybe: class-does not end with "/" so switch from "startswith" to "equals"
 
-    public static final String UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM = "org/objectweb/asm/";
+            // "java/lang/invoke/MethodHandle$1" ,
+            // "sun" ,
+            // "com/intellij/rt" ,
+            // "java/io/UnsupportedEncodingException",
+
+            /* todo only needed for dynamic mode and it isn't enough yet...
+            "java/lang/reflect" ,
+            "com/intellij/rt" ,
+            "jdk.internal.loader.ClassLoaders" ,
+            "sun/invoke" ,
+            "java/security" ,
+            "java/lang/Throwable",
+            "java/lang"
+            */
+    };
+
+    public static final String[] BLOCKED_PACKAGES = {
+            "org/conetex/runtime/instrument",
+            "org/objectweb/asm/"
+    };
 
     public static final int STATUS_BLOCKED = 403;
 
@@ -72,16 +93,15 @@ public class Transformer implements RetransformingClassFileTransformer {
         return transformSkippedClasses;
     }
 
-
     public Transformer() {
         this.handledClasses = new TreeSet<>();
         this.transformFailedClasses = new TreeSet<>();
         this.transformSkippedClasses = new TreeSet<>();
 
+        // todo is this solved in general?
         // calling this leads to
         // load all classes, before they are needed by transform.
         // this is necessary to avoid transformation loops
-
         //this.getConfig();
         //System.out.println("Counters: " + Counters.class.getModule() + "(module) " + Counters.class.getClassLoader() + "(classLoader)");
         //Counters.reset();
@@ -94,9 +114,7 @@ public class Transformer implements RetransformingClassFileTransformer {
                 " (classJvmName) | " + classBeingRedefined + " (classBeingRedefined) | " +
                 (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain) | " + module + "(module)");
         return transform(loader, classJvmName, classBeingRedefined, protectionDomain, classFileBuffer);
-        //return classFileBuffer;
     }
-
 
     private static boolean transformInProgress = false;
 
@@ -132,29 +150,24 @@ public class Transformer implements RetransformingClassFileTransformer {
 
         this.handledClasses.add(classJvmName);
 
-        if ( classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM) ||
-                classJvmName.startsWith(UNTRANSFORMABLE_CLASSES_SELF_TEST)  ||
-                classJvmName.startsWith(UNTRANSFORMABLE_CLASSES_SELF_TEST_M)
-                ) {
-            System.out.println("t noTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
-                    classBeingRedefined + " (classBeingRedefined) | " +
-                    (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
-            // skip transform
-            this.transformSkippedClasses.add(classJvmName);
-            return classFileBuffer;
+        for(String untransformablePackage : UNTRANSFORMABLE_PACKAGES){
+            if ( classJvmName.startsWith(untransformablePackage) ) {
+                System.out.println("t noTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
+                        classBeingRedefined + " (classBeingRedefined) | " +
+                        (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
+                // skip transform
+                this.transformSkippedClasses.add(classJvmName);
+                return classFileBuffer;
+            }
         }
 
-        if ( classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_SELF) ) {
-            System.err.println("blocked " + classJvmName);
-            // BLOCK class
-            // since this class should have been loaded before transformer was added to instrumentation.
-            // retransform for this class should have been skipped.
-            //throw new RuntimeException("blocked " + classJvmName);
-            System.err.println("blocked transform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
-                    classBeingRedefined + " (classBeingRedefined) | " +
-                    (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
-            //Runtime.getRuntime().halt(STATUS_BLOCKED);
-            System.exit(STATUS_BLOCKED);
+        for(String blockedPackage : BLOCKED_PACKAGES){
+            if ( classJvmName.startsWith(blockedPackage) ) {
+                System.err.println("blocked transform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
+                        classBeingRedefined + " (classBeingRedefined) | " +
+                        (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
+                block(classJvmName);
+            }
         }
 
         System.out.println("t doTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
@@ -177,13 +190,23 @@ public class Transformer implements RetransformingClassFileTransformer {
         return classFileBuffer;
     }
 
+    private void block(String classJvmName) {
+        System.err.println("blocked " + classJvmName);
+        // BLOCK class
+        // since this class should have been loaded before transformer was added to instrumentation.
+        // retransform for this class should have been skipped.
+        // todo is there any chance to make this nicer?
+        //throw new RuntimeException("blocked " + classJvmName);
+        //Runtime.getRuntime().halt(STATUS_BLOCKED);
+        System.exit(STATUS_BLOCKED);
+    }
+
     @Override
     public void triggerRetransform(Instrumentation inst, Class<?>[] allClasses) {
-        for (Class<?> clazz : allClasses) {
+        classLoop: for (Class<?> clazz : allClasses) {
             String classJvmName = clazz.getName().replace('.', '/');
 
 //            System.out.println("retransform .....: '" + classJvmName + "' (classJvmName) '" + clazz.getModule() + "' (module) '" + clazz.getClassLoader() + "' (classLoader)");
-
 
             if(   this.handledClasses.contains( classJvmName )   ) {
                 System.out.println("retransform obsolete: '" + classJvmName +
@@ -197,11 +220,16 @@ public class Transformer implements RetransformingClassFileTransformer {
             }
 			
 			// maybe obsolete
-            if( classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_LIBRARY_ASM) ||
-                    classJvmName.startsWith(UNTRANSFORMABLE_PACKAGE_SELF)
-            ) { // skip retransform
-                System.out.println("retransform skipped: '" + classJvmName + "' (classJvmName)");
-                continue;
+            for(String untransformablePackage : UNTRANSFORMABLE_PACKAGES){
+                if( classJvmName.startsWith(untransformablePackage) ) { // skip retransform
+                    System.out.println("retransform skipped: '" + classJvmName + "' (classJvmName)");
+                    continue classLoop;
+                }
+            }
+            for(String blockedPackage : BLOCKED_PACKAGES){
+                if ( classJvmName.startsWith(blockedPackage) ) {
+                    block(classJvmName);
+                }
             }
 
             try {
@@ -222,24 +250,22 @@ public class Transformer implements RetransformingClassFileTransformer {
         }
     }
 
-
     private static synchronized byte[] transform(byte[] classBytes) {
-
-            System.out.println(" classWriter->");
-            ClassReader reader = new ClassReader(classBytes);
-            ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES);
-            //ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
-            ClassVisitor visitor = new Visitor(writer);
-            reader.accept(visitor, ClassReader.EXPAND_FRAMES);
-            //reader.accept(visitor, ClassReader.SKIP_FRAMES);
-            byte[] re = writer.toByteArray();
-            System.out.println(" <-classWriter");
-            return re;
-
+        System.out.println(" classWriter->");
+        ClassReader reader = new ClassReader(classBytes);
+        ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES);
+        //ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
+        ClassVisitor visitor = new Visitor(writer);
+        reader.accept(visitor, ClassReader.EXPAND_FRAMES);
+        //reader.accept(visitor, ClassReader.SKIP_FRAMES);
+        byte[] re = writer.toByteArray();
+        System.out.println(" <-classWriter");
+        return re;
     }
 
     @SuppressWarnings("unused")
     public static byte[] noRealTransform(byte[] classBytes) {
+        // todo why does this lead to errors?
         ClassReader reader = new ClassReader(classBytes);
         ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES);
         return writer.toByteArray();
@@ -247,6 +273,7 @@ public class Transformer implements RetransformingClassFileTransformer {
 
     @SuppressWarnings("unused")
     public static byte[] noTransform(byte[] classBytes) {
+        // todo why does this lead to errors?
         return classBytes;
     }
 
@@ -257,6 +284,5 @@ public class Transformer implements RetransformingClassFileTransformer {
         System.out.println(Arrays.toString(totalCost));
         return totalCost;
     }
-
 
 }

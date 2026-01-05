@@ -1,11 +1,202 @@
-package org.conetex.runtime.instrument.metrics.cost.bootstrap;
+package org.conetex.runtime.instrument.metrics.cost.unnamed;
 
 import java.lang.invoke.*;
-import java.util.Arrays;
+import java.lang.reflect.Field;
 
-public class Bootstrap {
+public class CounterMethods {
+
+    // Static Counters in Bootstrap (initialized via reflection from Counters)
+    public static MethodHandle ARITHMETIC_ADD_SUB_NEG;
+    public static MethodHandle ARITHMETIC_DIV_REM;
+    public static MethodHandle ARITHMETIC_MUL;
+    public static MethodHandle ARRAY_LOAD;
+    public static MethodHandle ARRAY_NEW;
+    public static MethodHandle ARRAY_STORE;
+    public static MethodHandle COMPARE_INT;
+    public static MethodHandle COMPARE_LONG;
+    public static MethodHandle COMPARE_OBJECT;
+    public static MethodHandle EXCEPTION_THROW;
+    public static MethodHandle FIELD_LOAD;
+    public static MethodHandle FIELD_STORE;
+    public static MethodHandle JUMP;
+    public static MethodHandle METHOD_CALL;
+    public static MethodHandle METHOD_ENTRY;
+    public static MethodHandle MONITOR;
+    public static MethodHandle VARIABLE_LOAD;
+    public static MethodHandle VARIABLE_STORE;
+    public static MethodHandle TYPE_CHECK;
 
     static {
+        // Log message to confirm loading of Bootstrap
+        System.out.println("Bootstrap loaded: " +
+                CounterMethods.class + " (class) - " +
+                CounterMethods.class.getModule() + " (module) - " +
+                CounterMethods.class.getClassLoader() + " (loader)");
+
+        try {
+            // Dynamically load the Counters class using Class.forName
+            System.out.println("use SystemClassLoader '" + ClassLoader.getSystemClassLoader() + "' to load Counters.");
+            Class<?> countersClass = Class.forName("org.conetex.runtime.instrument.metrics.cost.Counters", true, ClassLoader.getSystemClassLoader());
+            Class<?> incrementableClass = Class.forName("org.conetex.runtime.instrument.interfaces.counter.Incrementable", true, ClassLoader.getSystemClassLoader());
+
+            // Dynamically initialize all Counters fields using reflection
+            initializeCounters(countersClass, incrementableClass);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Cannot bootstrap: Counters.class not found. Error: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Error while initializing Bootstrap counters: " + e.getMessage(), e);
+        }
+
+        try {
+            CallSite callToNirvana = Bootstrap.callSite(MethodHandles.lookup(), "nirvana", MethodType.methodType(void.class), CounterMethods.class);
+            callToNirvana.getTarget().invoke();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Method to initialize counters dynamically
+    private static void initializeCounters(Class<?> countersClass, Class<?> incrementableClass) throws Exception {
+
+        // Loop through all declared fields in the Bootstrap class
+        for (Field bootstrapField : CounterMethods.class.getDeclaredFields()) {
+            // Make the field accessible (for private or protected access modifiers)
+            //bootstrapField.setAccessible(true);
+
+            // Check if the field is static and of type Incrementable
+            if (
+                    java.lang.reflect.Modifier.isStatic(bootstrapField.getModifiers())
+                 && MethodHandle.class.isAssignableFrom(bootstrapField.getType())
+            ) {
+                String bootstrapFieldName = bootstrapField.getName();
+
+                // Set the value of the Bootstrap field to point to the instance from Counters
+                bootstrapField.set(null, createHandle(bootstrapFieldName, countersClass, incrementableClass) );
+                System.out.println("Initialized Bootstrap field '" + bootstrapFieldName + "' with value from Counters.");
+            }
+        }
+
+    }
+
+    private static MethodHandle createHandle(String bootstrapFieldName, Class<?> countersClass, Class<?> incrementableClass) throws Exception {
+
+        // Initialize the corresponding field in Bootstrap using the Counters field's value
+        Field field;
+        try {
+            // Lookup Counters field that matches the Bootstrap field name
+            field = countersClass.getDeclaredField(bootstrapFieldName);
+            // Make the field accessible (for private or protected access modifiers)
+            //field.setAccessible(true);
+
+            // Use MethodHandles to find the "increment" method in Incrementable
+            MethodHandle incrementHandle = MethodHandles.lookup()
+                    .findVirtual(incrementableClass, "increment", MethodType.methodType(void.class));
+            Object counterInstance = field.get(null);
+            MethodHandle boundHandle = incrementHandle.bindTo(counterInstance);
+            CallSite callSite = new ConstantCallSite(boundHandle);
+            return callSite.getTarget();
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException("No matching field found in Counters for '" + bootstrapFieldName + "': " + e.getMessage(), e);
+        }
+
+    }
+
+    // static CallSites
+    @SuppressWarnings("unused")
+    public static void incrementArithmeticAddSubNeg() throws Throwable { CounterMethods.ARITHMETIC_ADD_SUB_NEG.invoke(); }
+
+    @SuppressWarnings("unused")
+    public static void incrementArithmeticDivRem() throws Throwable { CounterMethods.ARITHMETIC_DIV_REM.invoke(); }
+
+    @SuppressWarnings("unused")
+    public static void incrementArithmeticMul() throws Throwable { CounterMethods.ARITHMETIC_MUL.invoke(); }
+
+    @SuppressWarnings("unused")
+    public static void incrementArrayLoad() throws Throwable {
+        CounterMethods.ARRAY_LOAD.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementArrayNew() throws Throwable {
+        CounterMethods.ARRAY_NEW.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementArrayStore() throws Throwable {
+        CounterMethods.ARRAY_STORE.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementCompareInt() throws Throwable {
+        CounterMethods.COMPARE_INT.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementCompareLong() throws Throwable {
+        CounterMethods.COMPARE_LONG.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementCompareObject() throws Throwable {
+        CounterMethods.COMPARE_OBJECT.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementExceptionThrow() throws Throwable {
+        CounterMethods.EXCEPTION_THROW.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementFieldLoad() throws Throwable {
+        CounterMethods.FIELD_LOAD.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementFieldStore() throws Throwable {
+        CounterMethods.FIELD_STORE.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementJump() throws Throwable {
+        CounterMethods.JUMP.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementMethodCall() throws Throwable {
+        CounterMethods.METHOD_CALL.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementMethodEntry() throws Throwable {
+        CounterMethods.METHOD_ENTRY.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementMonitor() throws Throwable {
+        CounterMethods.MONITOR.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementVariableLoad() throws Throwable {
+        CounterMethods.VARIABLE_LOAD.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementVariableStore() throws Throwable {
+        CounterMethods.VARIABLE_STORE.invoke();
+    }
+
+    @SuppressWarnings("unused")
+    public static void incrementTypeCheck() throws Throwable {
+        CounterMethods.TYPE_CHECK.invoke();
+    }
+
+
+
+
+
+    // todo delete
+    /* static {
         System.out.println("Bootstrap loaded: " + Bootstrap.class + " (class) - " + Bootstrap.class.getModule() + " (module) - " + Bootstrap.class.getClassLoader() + " (loader)");
         try {
             Class.forName("org.conetex.runtime.instrument.metrics.cost.Counters", true, null);
@@ -13,19 +204,14 @@ public class Bootstrap {
             throw new RuntimeException("can not bootstrap " + e.getMessage());
         }
 
-        try {
-            CallSite callToNirvana = bootstrap(MethodHandles.lookup(), "nirvana", MethodType.methodType(void.class), Bootstrap.class);
-            callToNirvana.getTarget().invoke();
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
 
+    }*/
+    // todo delete
     private static int i = 0;
     private static boolean incrementationBlocked = false;
     public static synchronized void nirvana(){
         //System.out.println("daya");
-        if (bootstrapInProgress) {
+        if (Bootstrap.bootstrapInProgress) {
             // We are already inside increment() → endless recursion detected
             return;
         }
@@ -43,69 +229,8 @@ public class Bootstrap {
         }
     }
 
-/*
-        name = "nirvana";
-        realOwner = Bootstrap.class;
-
- */
-    public static class BootstrapCyclicCallException extends IllegalStateException {
-        public BootstrapCyclicCallException(String message) {
-            super(message);
-        }
-    }
-    private static boolean bootstrapInProgress = false;
-    public static synchronized CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type,
-                                     Class<?> realOwner) throws NoSuchMethodException, IllegalAccessException {
-        name = "nirvana";
-        realOwner = Bootstrap.class;
-        if (incrementationBlocked) {
-            // We are already inside increment() → endless recursion detected
-            return new ConstantCallSite(MethodHandles.empty(type));
-        }
-        if (bootstrapInProgress) {
-            // We are already inside increment() → endless recursion detected
-            return new ConstantCallSite(MethodHandles.empty(type));
-        }
-        bootstrapInProgress = true;
-        try {
-            Module realOwnerModule = realOwner.getModule();
-            if (!realOwnerModule.isExported(realOwner.getPackageName())) {
-                throw new NoSuchMethodException(realOwnerModule + " does not export " + realOwner.getPackageName());
-            }
-
-            System.out.println("bootstrap: " + realOwner + " | " + name + " | " + type);
-            // Link the dynamic method to an actual implementation elsewhere (possibly in another class)
-            MethodHandle targetMethodHandle = null;
-            try {
-                targetMethodHandle = lookup.findStatic(
-                        realOwner, // Real owner of the "incrementCompareInt" method
-                        name,      // Actual method name
-                        type       // Method descriptor
-                );
-            } catch (IllegalAccessException e) {
-                System.err.println("bootstrap IllegalAccessException: " + realOwner + " | " + name + " | " + type + " | " + e.getMessage() + " ");
-                throw e;
-            } catch (Throwable e) {
-                System.err.println("bootstrap Throwable: " + realOwner + " | " + name + " | " + type + " | " + e.getMessage() + " ");
-                throw e;
-            }
-
-            // Return a CallSite that links to the targetMethodHandle
-            return new ConstantCallSite(targetMethodHandle);
-        }
-        finally {
-            bootstrapInProgress = false;
-        }
-    }
-
-    // todo this leads to crash:
 
 
-    private static boolean lookupAccessIsAllowed(MethodHandles.Lookup lookup, Class<?> realOwner) {
-        // Check if the Lookup has access rights to the realOwner class
-        Module ownerModule = realOwner.getModule();
-        return ownerModule.isExported(realOwner.getPackageName());
-    }
 }
 
 
@@ -174,3 +299,4 @@ org.conetex.runtime.instrument.test.jar.module
 
 
  */
+

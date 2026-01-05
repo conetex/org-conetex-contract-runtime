@@ -16,40 +16,42 @@ public class Visitor extends ClassVisitor {
 
         return new AdviceAdapter(Opcodes.ASM9, mv, access, name, desc) {
 
-            private void visitMvDyn(String incrementMethodEntry) {
+            // todo dynamic mode does not work since we are running into loops
+            private void visitMvDynamic(String incrementMethodEntry) {
                 // Register an INVOKEDYNAMIC instruction here
                 mv.visitInvokeDynamicInsn(
-                    incrementMethodEntry,                                     // Name of the method (dynamic name)
-                    "()V",                                                    // Method descriptor
-                    new Handle(
-                        Opcodes.H_INVOKESTATIC,                               // Bootstrap method type (static method)
-                        "org/conetex/runtime/instrument/metrics/cost/bootstrap/Bootstrap", // Owner class
-                        "bootstrap",                                          // Bootstrap method name (defined in Owner class)
-                        "(" +
-                                "Ljava/lang/invoke/MethodHandles$Lookup;" +
-                                "Ljava/lang/String;" +
-                                "Ljava/lang/invoke/MethodType;" +
-                                "Ljava/lang/Class;" +
-                        ")" +
-                        "Ljava/lang/invoke/CallSite;",                        // Method descriptor
-                        false                                                 // Whether this is an interface method
-                    ),
-                    Type.getType("Lorg/conetex/runtime/instrument/metrics/cost/Counters;") // Pass the Real-Owner class as an argument
+                        incrementMethodEntry,                                                      // Name of the method (dynamic name)
+                        "()V",                                                                     // Method descriptor
+                        new Handle(
+                                Opcodes.H_INVOKESTATIC,                                            // Bootstrap method type (static method)
+                                "org/conetex/runtime/instrument/metrics/cost/unnamed/Bootstrap",      // Owner class
+                                "callSite",                                                       // Bootstrap method name (defined in Owner class)
+                                "(" +
+                                        "Ljava/lang/invoke/MethodHandles$Lookup;" +
+                                        "Ljava/lang/String;" +
+                                        "Ljava/lang/invoke/MethodType;" +
+                                        //"Ljava/lang/Class;" +                                    // argument Real-Owner class
+                                        ")" +
+                                        "Ljava/lang/invoke/CallSite;",                             // Method descriptor
+                                false                                                              // Whether this is an interface method
+                        )
+                        //, Type.getType("Lorg/conetex/runtime/instrument/metrics/cost/Counters;") // Pass the Real-Owner class as an argument
                 );
-
             }
 
             private void visitMv(String incrementMethodEntry){
-                visitMvDyn(incrementMethodEntry);
+                visitMvStatic(incrementMethodEntry);
             }
 
-            private void visitMvStat(String incrementMethodEntry) {
+            private void visitMvStatic(String incrementMethodEntry) {
                 mv.visitMethodInsn(INVOKESTATIC,
-                        "org/conetex/runtime/instrument/metrics/cost/Counters",
+                        // for module- and cp-mode - call to the generic targets in bootstrap (generated from Counters):
+                        "org/conetex/runtime/instrument/metrics/cost/unnamed/CounterMethods",
+                        // for cp-mode only - call to the increment methods in Counters:
+                        //"org/conetex/runtime/instrument/metrics/cost/Counters",
                         incrementMethodEntry,
                         "()V",
                         false);
-
             }
 
             //@Override

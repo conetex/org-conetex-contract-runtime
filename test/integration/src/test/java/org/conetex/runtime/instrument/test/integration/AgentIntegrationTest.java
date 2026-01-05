@@ -72,12 +72,14 @@ class AgentIntegrationTest {
         );
         System.out.println("version: " + version);
 
-        Path agentJar = Path.of("../../agent/target/agent-" + version + "-fat.jar").toAbsolutePath();
+        Path agentJar = Path.of("../../agent/target/agent-" + version + ".jar").toAbsolutePath();
         Path testJar = Path.of("../" + moduleToTest + "/target/" + moduleToTest + "-" + version + ".jar").toAbsolutePath();
 
         ProcessBuilder pb = new ProcessBuilder(
                 "java",
-                "-javaagent:" + agentJar + "=pathToTransformerJar:" + "../../metrics-cost/target/metrics-cost-" + version + "-fat.jar",
+                "-javaagent:" + agentJar + "=pathToTransformerJar:" +
+                        "../../metrics-cost/target/metrics-cost-" + version + "-fat.jar" +
+                        ",../../metrics-cost-unnamed/target/metrics-cost-unnamed-" + version + ".jar",
                 "-cp",
                 testJar.toString(),
                 classToTest
