@@ -47,6 +47,7 @@ public class CounterMethods {
             throw new RuntimeException("Error while initializing Bootstrap counters: " + e.getMessage(), e);
         }
 
+        // warmup - needed to have "java/lang/invoke/" loaded
         try {
             CallSite callToNirvana = Bootstrap.callSite(MethodHandles.lookup(), "nirvana", MethodType.methodType(void.class), CounterMethods.class);
             callToNirvana.getTarget().invoke();
@@ -103,13 +104,19 @@ public class CounterMethods {
 
     // static CallSites
     @SuppressWarnings("unused")
-    public static void incrementArithmeticAddSubNeg() throws Throwable { CounterMethods.ARITHMETIC_ADD_SUB_NEG.invoke(); }
+    public static void incrementArithmeticAddSubNeg() throws Throwable {
+        CounterMethods.ARITHMETIC_ADD_SUB_NEG.invoke();
+    }
 
     @SuppressWarnings("unused")
-    public static void incrementArithmeticDivRem() throws Throwable { CounterMethods.ARITHMETIC_DIV_REM.invoke(); }
+    public static void incrementArithmeticDivRem() throws Throwable {
+        CounterMethods.ARITHMETIC_DIV_REM.invoke();
+    }
 
     @SuppressWarnings("unused")
-    public static void incrementArithmeticMul() throws Throwable { CounterMethods.ARITHMETIC_MUL.invoke(); }
+    public static void incrementArithmeticMul() throws Throwable {
+        CounterMethods.ARITHMETIC_MUL.invoke();
+    }
 
     @SuppressWarnings("unused")
     public static void incrementArrayLoad() throws Throwable {

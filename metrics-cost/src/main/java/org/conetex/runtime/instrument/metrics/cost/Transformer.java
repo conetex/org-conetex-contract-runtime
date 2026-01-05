@@ -16,12 +16,139 @@ import java.util.TreeSet;
 
 public class Transformer implements RetransformingClassFileTransformer {
 
-    public static final String[] UNTRANSFORMABLE_PACKAGES = {
+    /*
+prompt:
+wenn man mit einem agent per asm java klassen instrumentiert.
+welche packages muss man auf jeden fall ausschließen?
+welche packages müssen auch von professionellen tools von der instrumentierung ausgeschlossen werden?
+mit "professionellen tools" meine ich tools zur instrumentierung zur instrumentierung also zum beispiel byte-buddy oder
+IDEs also zum Beispiel intellij-idea, eclipse, android-studio.
+
+
+---------------------------------------
+1. answer chatGPT code guru:
+
+Systemkritische Packages (immer ausschließen)
+Es gibt eine Reihe von Systemklassen und Systempaketen, die du immer ausschließen solltest, unabhängig vom Tool zur Instrumentierung. Änderungen an diesen Klassen können die JVM destabilisieren oder schwerwiegende Sicherheitsrisiken verursachen.
+
+Ausschlusskandidaten für die JVM:
+Core Java-Klassen (werden vom BootstrapClassLoader geladen):
+
+java.lang.*
+Beispiele: java.lang.Object, java.lang.String, java.lang.Thread, java.lang.Class.
+java.util.*
+Beispiele: java.util.concurrent, java.util.Map, java.util.ArrayList.
+java.io.*:
+Beispiele: java.io.InputStream, java.io.OutputStream, java.io.File.
+java.net.*:
+Netzwerkklassen der JVM: java.net.Socket, java.net.URL.
+java.nio.*:
+Paket für NIO (non-blocking I/O). Beispiele: java.nio.file.Path, java.nio.channels.
+Java Reflection API:
+java.lang.reflect.* (z. B. Field, Method, Constructor).
+ClassLoader- und Bytecode-Klassen:
+
+java.lang.ClassLoader
+java.lang.invoke.MethodHandles: Wird verwendet, um dynamische Methodenaufrufe zu ermöglichen.
+Security-Klassen:
+
+java.security.* (z. B. java.security.PrivilegedAction).
+Module- und interne JVM-Klassen (ab Java 9+):
+
+jdk.internal.*:
+Dies enthält interne JVM-APIs, die systemkritisch sind. Beispiele:
+jdk.internal.loader.ClassLoaders.
+jdk.internal.reflect.*.
+java.base-Modul:
+Alle Klassen im java.base-Modul sollten tabu sein, da die JVM selbst auf diese Klassen angewiesen ist.
+
+
+private static final String[] EXCLUDES_PACKAGES = new String[]{
+    // Core JVM classes
+    "java/lang/Object",              // reason: Fundamental root class of all Java objects; system-critical.
+    "java/lang/String",              // reason: Immutable core class, any changes can destabilize the JVM.
+    "java/lang/Class",               // reason: Represents classes and interfaces in the JVM; affects class metadata.
+    "java/lang/Thread",              // reason: Central to multithreading in Java; critical.
+    "java/lang/ThreadLocal",         // reason: Thread-local storage, crucial for concurrency.
+    "java/lang/Throwable",           // reason: Base class for exceptions; fundamental for error handling.
+    "java/lang/System",              // reason: Entry point for system-related operations (e.g., I/O, environment variables).
+
+    // JVM internal mechanics
+    "java/lang/invoke/",             // reason: Dynamic method invocation (MethodHandles, CallSite); cannot safely modify.
+    "java/lang/ref/",                // reason: Reference types for GC (SoftReference, WeakReference); GC-sensitive classes.
+    "java/lang/reflect/",            // reason: Reflection API classes (e.g., Field, Method); used indirectly by many tools.
+
+    // Collections and functional interfaces
+    "java/util/ArrayList",           // reason: Common list implementation; critical performance issues if modified.
+    "java/util/HashMap",             // reason: Core map implementation; used widely. Changes could cause issues.
+    "java/util/concurrent/",         // reason: Classes for concurrency (ThreadPool, Future); any interference is dangerous.
+    "java/util/stream/",             // reason: Streams API classes; unsafe Modifikation kann die Stream-Operationen beeinflussen.
+    "java/util/Base64",              // reason: Encoding/decoding functionality, errors in modification affect data handling.
+
+    // I/O classes
+    "java/io/File",                  // reason: Represents file systems; changes risk file handling corruption.
+    "java/io/InputStream",           // reason: Base class for input streams; critical for I/O operations.
+    "java/io/OutputStream",          // reason: Base class for output streams; fundamental for data writing.
+    "java/io/BufferedReader",        // reason: I/O buffering (common in file reading); critical performance impact.
+
+    // Networking
+    "java/net/Socket",               // reason: Represents a networking socket; manipulation risks breaking communication.
+    "java/net/ServerSocket",         // reason: Fundamental class for server-side networking.
+    "java/net/URL",                  // reason: Represents Universal Resource Locator; unsafe changes can corrupt URLs.
+
+    // NIO
+    "java/nio/file/Path",            // reason: Represents file system paths; critical for modern I/O.
+    "java/nio/channels/",            // reason: Handles NIO channels; low-level byte operations.
+
+    // Security
+    "java/security/MessageDigest",   // reason: Used for hashing algorithms (MD5, SHA); any change affects core cryptography.
+    "java/security/cert/",           // reason: X.509 certificate handling; interference can break TLS/SSL.
+    "javax/crypto/",                 // reason: Cryptography APIs (AES, RSA); unsafe modifications affect secure communication.
+
+    // Module system (Java 9+)
+    "java/lang/module/",             // reason: Represents the Java module system; interference risks Java 9+ modular applications.
+
+    // Internal JDK classes (always exclude)
+    "jdk/internal/loader/",          // reason: Handles class loading internally; breaking these can destabilize the JVM entirely.
+    "jdk/internal/math/",            // reason: Math operations (e.g., BigInteger internals); critical for proper operation.
+    "jdk/internal/reflect/",         // reason: Reflection internals; unsafe changes affect metadata operations.
+    "sun/misc/Unsafe",               // reason: Private APIs for unsafe memory operations; interference can corrupt runtime.
+
+    // ASM-related classes
+    "org/objectweb/asm/",            // reason: Critical classes used by ASM itself; infinite recursion risks.
+    "org/objectweb/asm/util/",       // reason: Helper utilities for debugging ASM output; instrumentation of them compromises logging.
+
+    // ByteBuddy-related classes
+    "net/bytebuddy/",                // reason: ByteBuddy classes (used for dynamic proxies and weavers).
+
+    // IDE-related exclusion
+    "com/intellij/",                 // reason: IntelliJ IDEA classes, critical for plugin and IDE operations.
+    "org/eclipse/",                  // reason: Eclipse IDE functionality, avoiding interference with IDE runtime processes.
+
+    // Framework-specific exclusion
+    "org/springframework/",          // reason: Spring Framework with dynamic proxies and AOP mechanisms (e.g., Beans).
+    "org/hibernate/",                // reason: Hibernate ORM proxies; internal optimizations for persistence.
+
+    // Testing frameworks
+    "org/junit/",                    // reason: JUnit testing framework; instrumenting tests compromises repeatability.
+    "org/testng/",                   // reason: TestNG testing framework functionality.
+
+    // JVM dynamic proxies
+    "com/sun/proxy/$Proxy",          // reason: JVM-generated dynamic proxy classes during runtime; should not be modified.
+};
+
+
+---------------------------------------
+
+    */
+    public static final String[] UNTRANSFORMABLE = {
+            // type names carefully: class-names do not end with "/" so switch from "startsWith" to "equals"
+
             "java/lang/invoke/" , // needed for bootstrap calls
 
             // unblock test-classes
-            "org/conetex/runtime/instrument/test/jar/Main" ,      // todo protect this better (nobody should create a package like this)
-            "org/conetex/runtime/instrument/test/jar/module/Main" // maybe: class-does not end with "/" so switch from "startswith" to "equals"
+            "org/conetex/runtime/instrument/test/jar/Main" ,
+            "org/conetex/runtime/instrument/test/jar/module/Main"
 
             // "java/lang/invoke/MethodHandle$1" ,
             // "sun" ,
@@ -150,8 +277,11 @@ public class Transformer implements RetransformingClassFileTransformer {
 
         this.handledClasses.add(classJvmName);
 
-        for(String untransformablePackage : UNTRANSFORMABLE_PACKAGES){
-            if ( classJvmName.startsWith(untransformablePackage) ) {
+        for(String untransformable : UNTRANSFORMABLE){
+            if (
+                    classJvmName.startsWith(untransformable) ||                                     // todo class only means equals but this does not work with surefire
+                    (untransformable.endsWith("/") && classJvmName.startsWith(untransformable)) // package
+            ) {
                 System.out.println("t noTransform: " + loader + " (loader) | " + classJvmName + " (classJvmName) | " +
                         classBeingRedefined + " (classBeingRedefined) | " +
                         (protectionDomain == null ? "null" : protectionDomain.hashCode()) + " (protectionDomain)");
@@ -192,6 +322,7 @@ public class Transformer implements RetransformingClassFileTransformer {
 
     private void block(String classJvmName) {
         System.err.println("blocked " + classJvmName);
+        System.out.println("blocked " + classJvmName);
         // BLOCK class
         // since this class should have been loaded before transformer was added to instrumentation.
         // retransform for this class should have been skipped.
@@ -220,8 +351,11 @@ public class Transformer implements RetransformingClassFileTransformer {
             }
 			
 			// maybe obsolete
-            for(String untransformablePackage : UNTRANSFORMABLE_PACKAGES){
-                if( classJvmName.startsWith(untransformablePackage) ) { // skip retransform
+            for(String untransformable : UNTRANSFORMABLE){
+                if (
+                        classJvmName.equals(untransformable) ||                                     // class
+                        (untransformable.endsWith("/") && classJvmName.startsWith(untransformable)) // package
+                ) {  // skip retransform
                     System.out.println("retransform skipped: '" + classJvmName + "' (classJvmName)");
                     continue classLoop;
                 }

@@ -15,6 +15,7 @@ public class Main {
     public static final String TEST_FAILED = "test FAILED";
     public static final String TEST_OK = "test OK";
 
+    // TODO for whatever reason tests are not successfully for every run. threads? duplicate counters?
     public static void main(String[] args) {
 
         System.out.println("org.conetex.runtime.instrument.test.jar MainTest working here: " + new File(".").getAbsolutePath());

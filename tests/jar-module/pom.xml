@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.conetex.runtime.instrument</groupId>
-        <artifactId>test</artifactId>
+        <groupId>org.conetex.runtime.instrument.tests</groupId>
+        <artifactId>parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>integration</artifactId>
+    <artifactId>jar-module</artifactId>
 
     <dependencies>
         <dependency>
@@ -21,13 +21,8 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>true</filtering>
-            </testResource>
-        </testResources>
-    </build>
+    <!-- todo add a call here like for jar.
+         problem is "only" to construct the module-path
+    -->
 
 </project>

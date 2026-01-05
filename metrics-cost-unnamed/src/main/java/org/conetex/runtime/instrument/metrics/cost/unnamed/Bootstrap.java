@@ -2,6 +2,7 @@ package org.conetex.runtime.instrument.metrics.cost.unnamed;
 
 import java.lang.invoke.*;
 
+// todo has this class to be here in unnamed module?
 public class Bootstrap {
 
     public static class BootstrapCyclicCallException extends IllegalStateException {
@@ -19,7 +20,6 @@ public class Bootstrap {
 
     public static synchronized CallSite callSite(MethodHandles.Lookup lookup, String name, MethodType type,
                                                  Class<?> realOwner) throws NoSuchMethodException, IllegalAccessException {
-        //name = "nirvana";
 
         if (bootstrapInProgress) {
             //return new ConstantCallSite(MethodHandles.empty(type));

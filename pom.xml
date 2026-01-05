@@ -23,7 +23,7 @@
         <module>metrics-cost</module>
         <module>metrics-cost-unnamed</module>
         <module>agent</module>
-        <module>test</module>
+        <module>tests</module>
         <module>example</module>
     </modules>
 
