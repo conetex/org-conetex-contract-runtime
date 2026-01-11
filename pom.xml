@@ -20,6 +20,7 @@
     <modules>
         <module>interfaces</module>
         <module>counter</module>
+        <module>collection</module>
         <module>metrics-cost</module>
         <module>metrics-cost-unnamed</module>
         <module>agent</module>

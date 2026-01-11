@@ -552,6 +552,7 @@ public class Instrument {
                 loadAllClassesFromJar(allClassNamesToLoad, cls[i]);
                 return coreClass;
             }
+
         }
 
         throw new RuntimeException("can not load '" + coreClassName + "'");
