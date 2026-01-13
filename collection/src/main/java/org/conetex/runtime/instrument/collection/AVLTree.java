@@ -259,6 +259,7 @@ public class AVLTree<T extends Comparable<T>> {
         }
 
 
+
         // RL
         private Node<D> rotateRightLeftNew(Node<D> newRight) {
             if(newRight == this.right){
