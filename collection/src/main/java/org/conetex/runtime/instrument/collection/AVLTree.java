@@ -57,6 +57,13 @@ public class AVLTree<T extends Comparable<T>> {
             this.height = 1;
         }
 
+        private Node(D data, Node<D> left, Node<D> right) {
+            this.data = data;
+            this.left = left;
+            this.right = right;
+            this.updateHeight();
+        }
+
         // Insert a key into the AVL tree and return the new root of the subtree
         private Node<D> insert(D valueToInsert) {
             int cmp = valueToInsert.compareTo(this.data);
@@ -71,11 +78,11 @@ public class AVLTree<T extends Comparable<T>> {
                         if ( newLeft.right == null || (newLeft.left != null && newLeft.left.height >= newLeft.right.height) ) {
                             // LL
                             //return newLeft.rootRotateRight(this);
-                            return this.rotateRight(newLeft);
+                            return this.rotateRightNew(newLeft);
                         }
                         // left.right HIGHER ==> LR
                         //return newLeft.right.rootRotateLeft(newLeft).rootRotateRight( this );
-                        return this.rotateLeftRight(newLeft);
+                        return this.rotateLeftRightNew(newLeft);
                     }
                     return this.setLeftUpdateHeight( newLeft );
                 }
@@ -91,11 +98,11 @@ public class AVLTree<T extends Comparable<T>> {
                         if( newRight.left == null || (newRight.right != null && newRight.left.height <= newRight.right.height) ){
                             // RR
                             //return newRight.rootRotateLeft(this);
-                            return this.rotateLeft(newRight);
+                            return this.rotateLeftNew(newRight);
                         }
                         // right.left HIGHER ==> RL
                         //return newRight.left.rootRotateRight(newRight).rootRotateLeft( this );
-                        return this.rotateRightLeft(newRight);
+                        return this.rotateRightLeftNew(newRight);
                     }
                     return this.setRightUpdateHeight( newRight );
                 }
@@ -128,6 +135,25 @@ public class AVLTree<T extends Comparable<T>> {
 
 
         // LL
+        private Node<D> rotateRightNew(Node<D> newRoot) {
+
+            // Perform rotation
+            Node<D> newThis = new Node<>(this.data, newRoot.right, this.right);
+
+            if(newRoot == this.left){
+                // newRoot is not new ==> make it new
+                return new Node<>(newRoot.data, newRoot.left, newThis);
+            }
+            else{
+                // newRoot is new ==> we can change it
+                newRoot.right = newThis;
+                // Update heights
+                newRoot.updateHeight();
+                return newRoot;
+            }
+
+        }
+
         private synchronized Node<D> rotateRight(Node<D> newRoot){
             return newRoot.rootRotateRightUpdateHeight(this);
         }
@@ -154,6 +180,24 @@ public class AVLTree<T extends Comparable<T>> {
 
 
         // RR
+        private Node<D> rotateLeftNew(Node<D> newRoot) {
+
+            // Perform rotation
+            Node<D> newThis = new Node<>(this.data, this.left, newRoot.left);
+
+            if(newRoot == this.right){
+                // newRoot is not new ==> make it new
+                return new Node<>(newRoot.data, newThis, newRoot.right);
+            }
+            else{
+                // newRoot is new ==> we can change it
+                newRoot.left = newThis;
+                newRoot.updateHeight();
+                return newRoot;
+            }
+
+        }
+
         private synchronized Node<D> rotateLeft(Node<D> newRoot){
             return newRoot.rootRotateLeftUpdateHeight(this);
         }
@@ -180,6 +224,39 @@ public class AVLTree<T extends Comparable<T>> {
 
 
         // LR
+        private Node<D> rotateLeftRightNew(Node<D> newLeft) {
+            if(newLeft == this.left){
+                // newLeft is not new ==> make it new
+
+                Node<D> reA = new Node<>(
+                        newLeft.right.data,
+                        new Node<>(newLeft.data, newLeft.left, newLeft.right.left),
+                        new Node<>(this.data, newLeft.right.right, this.right)
+                );
+
+                // Update heights
+                reA.updateHeight();
+                return reA;
+            }
+            else{
+                // newLeft is new ==> update it
+
+                D data = newLeft.right.data; // but remember data before update
+                newLeft.right = newLeft.right.left;
+                newLeft.updateHeight();
+
+                Node<D> reA = new Node<>(
+                        data,
+                        newLeft,
+                        new Node<>(this.data, newLeft.right.right, this.right)
+                );
+
+                // Update heights
+                reA.updateHeight();
+                return reA;
+            }
+        }
+
         private synchronized Node<D> rotateLeftRight(Node<D> newLeft) {
             return newLeft.rightRotateLeftRight(this);
         }
@@ -194,6 +271,11 @@ public class AVLTree<T extends Comparable<T>> {
 
 
         // RL
+        private Node<D> rotateRightLeftNew(Node<D> newRight) {
+            // todo implement
+            return null;
+        }
+
         private synchronized Node<D> rotateRightLeft(Node<D> newRight) {
             return newRight.leftRotateRightLeft(this);
         }
